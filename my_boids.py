@@ -1,5 +1,5 @@
-import math
-from typing import overload
+# import math
+from math import sqrt
 
 import numpy as np
 import pygame as pg
@@ -7,11 +7,18 @@ import pygame as pg
 from boids import Boid
 
 # Constants
-WINSIZE = [640, 480]
+WINSIZE = [1000, 1000]
+# WINSIZE = [640, 480]
 WINCENTER = [320, 240]
-NUMBOIDS = 100
-BOIDSIZE = 5
-BOIDMAXSPEED = 5
+NUMBOIDS = 5
+
+BOID_SIZE = 5
+BOID_MAXSPEED = 3
+BOID_VELOCITY_FACTOR = 0.001  # How much to update the boid's velocity
+BOID_MIN_DISTANCE = 20
+BOID_AVOID_FACTOR = 0.01
+BOID_MATCHING_FACTOR = 0.01
+
 
 rng = np.random.default_rng()
 
@@ -35,7 +42,7 @@ def init_boids(num_boids: int) -> list:
             position=rng.integers(0, high=WINSIZE, size=2).tolist(),
             velocity=rng.integers(0, high=WINSIZE, size=2).tolist(),
             color=rng.integers(20, 255, 3).tolist(),
-            size=BOIDSIZE,
+            size=BOID_SIZE,
         )
         boids_list.append(boid)
 
@@ -85,8 +92,6 @@ def fly_to_center_of_mass(boid):
     """Move the boid towards the perceived center of mass of the flock"""
     global boids
 
-    update_factor = 0.01  # How much to update the boid's velocity
-
     # Calculate the center of mass
     sum_of_x = sum(b.position[0] for b in boids)
     sum_of_x -= boid.position[0]
@@ -94,8 +99,8 @@ def fly_to_center_of_mass(boid):
     sum_of_y -= boid.position[1]
     center_of_mass = (sum_of_x / (NUMBOIDS - 1), sum_of_y / (NUMBOIDS - 1))
 
-    delta_x = (center_of_mass[0] - boid.position[0]) * update_factor
-    delta_y = (center_of_mass[1] - boid.position[1]) * update_factor
+    delta_x = (center_of_mass[0] - boid.position[0]) * BOID_VELOCITY_FACTOR
+    delta_y = (center_of_mass[1] - boid.position[1]) * BOID_VELOCITY_FACTOR
 
     # Update the boid's velocity
     boid.velocity[0] += delta_x
@@ -106,9 +111,6 @@ def avoid_other_boids(boid):
     """Avoid other boids that are too close"""
     global boids
 
-    min_distance = 20
-    avoid_factor = 0.5
-
     delta_x = 0
     delta_y = 0
     for other_boid in boids:
@@ -117,27 +119,25 @@ def avoid_other_boids(boid):
             continue
 
         # Calculate the distance between the boids
-        distance = math.sqrt(
+        distance = sqrt(
             (boid.position[0] - other_boid.position[0]) ** 2
             + (boid.position[1] - other_boid.position[1]) ** 2
         )
 
         # If the distance is less than the minimum, apply the avoidance
-        if distance < min_distance:
+        if distance < BOID_MIN_DISTANCE:
             # Calculate the vector to the other boid
             delta_x += boid.position[0] - other_boid.position[0]
             delta_y += boid.position[1] - other_boid.position[1]
 
         # Apply the vector to the boid
-        boid.velocity[0] += delta_x * avoid_factor
-        boid.velocity[1] += delta_y * avoid_factor
+        boid.velocity[0] += delta_x * BOID_AVOID_FACTOR
+        boid.velocity[1] += delta_y * BOID_AVOID_FACTOR
 
 
 def match_velocity(boid):
     """Match the velocity of the boid with the velocity of the flock"""
     global boids
-
-    matching_factor = 0.01
 
     # Calculate the average velocity of the flock
     sum_of_x = sum(b.velocity[0] for b in boids)
@@ -147,17 +147,17 @@ def match_velocity(boid):
     average_velocity = (sum_of_x / (NUMBOIDS - 1), sum_of_y / (NUMBOIDS - 1))
 
     # Update the boid's velocity
-    boid.velocity[0] += average_velocity[0] * matching_factor
-    boid.velocity[1] += average_velocity[1] * matching_factor
+    boid.velocity[0] += average_velocity[0] * BOID_MATCHING_FACTOR
+    boid.velocity[1] += average_velocity[1] * BOID_MATCHING_FACTOR
 
 
 def clamp_speed(boid):
     speed = boid.speed
     # Apply a speed limit
-    if speed > BOIDMAXSPEED:
+    if speed > BOID_MAXSPEED:
         boid.velocity = [
-            boid.velocity[0] * BOIDMAXSPEED / speed,
-            boid.velocity[1] * BOIDMAXSPEED / speed,
+            boid.velocity[0] * BOID_MAXSPEED / speed,
+            boid.velocity[1] * BOID_MAXSPEED / speed,
         ]
 
 

@@ -1,14 +1,16 @@
 from dataclasses import dataclass
 from typing import Tuple
 
-from math import cos, sin, radians, degrees, atan2, sqrt
+from math import sqrt
 import numpy as np
 
 rng = np.random.default_rng()
 
+
 @dataclass
 class Boid:
     """A single boid in the flock"""
+
     position: Tuple[int, int] = (0, 0)
     velocity: Tuple[int, int] = (0, 0)
     color: Tuple[int, int, int] = (255, 0, 0)
@@ -22,9 +24,7 @@ class Boid:
     @property
     def speed(self):
         """Calculate the speed of the boid"""
-        return sqrt(
-            sum(v ** 2 for v in self.velocity)
-        )
+        return sqrt(sum(v**2 for v in self.velocity))
 
     def move(self):
         """Move the boid"""
@@ -44,8 +44,9 @@ class Boid:
             ]
         )
 
-if __name__     == "__main__":
+
+if __name__ == "__main__":
     a = Boid(position=(0, 0), velocity=(1, 1), color=(0, 0, 0), size=1)
     b = Boid(position=(0, 0), velocity=(1, 1), color=(0, 0, 0), size=1)
-    
+
     print(a == b)
