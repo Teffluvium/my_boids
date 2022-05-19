@@ -42,26 +42,25 @@ def init_boids(num_boids: int) -> list:
     return boids_list
 
 
-def draw_boids(screen, boids, color="black"):
+def draw_boids(screen, boids, color=None):
     # Draw the boids
     for boid in boids:
-        if color == "black":
-            boid_color = boid.color
-        else:
-            boid_color = color
-
+        # Override color if provided
+        if not color:
+            color = boid.color
+            
         pg.draw.circle(
             screen,
-            color=boid_color,
+            color=color,
             center=boid.position,
             radius=boid.size,
         )
         dir_x, dir_y = pol2cart(boid.speed + boid.size, boid.direction)
         pg.draw.line(
             screen,
-            boid_color,
-            boid.position,
-            (boid.position[0] + dir_x, boid.position[1] + dir_y),
+            color=color,
+            start_pos=boid.position,
+            end_pos=(boid.position[0] + dir_x, boid.position[1] + dir_y),
         )
 
 
