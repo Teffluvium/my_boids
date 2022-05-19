@@ -1,17 +1,17 @@
 import math
 
 import numpy as np
-from boid import Boid
-
 import pygame as pg
 import pygame.gfxdraw
+
+from boids import Boid
 
 # Constants
 WINSIZE = [640, 480]
 WINCENTER = [320, 240]
 NUMBOIDS = 3
 
-rng = np.random.default_rng(12345)
+rng = np.random.default_rng()
 
 
 def pol2cart(rho, phi):
@@ -36,7 +36,7 @@ def init_boids(num_boids: int) -> list:
             direction=rng.uniform(0, 360),
             speed=5,
             color=rng.integers(10, 255, 3).tolist(),
-            size=2,
+            size=5,
         )
         boids_list.append(boid)
     return boids_list
@@ -68,7 +68,7 @@ def draw_boids(screen, boids, color="black"):
 def main():
     # Initialize the boids
     boids = init_boids(NUMBOIDS)
-    [print(b) for b in boids]
+    # [print(b) for b in boids]
 
     # Initialize pygame
     pg.init()

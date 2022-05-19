@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import Tuple
 
 
 @dataclass
 class Boid:
+    """A single boid in the flock"""
     position: Tuple[int, int] = (0, 0)
     speed: float = 5
     direction: float = 0
@@ -20,7 +21,3 @@ class Boid:
                 f"{self.size=})",
             ]
         )
-
-
-def initialize_boids(num_boids: int) -> list:
-    return [Boid() for _ in range(num_boids)]
