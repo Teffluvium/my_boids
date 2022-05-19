@@ -20,7 +20,3 @@ class Boid:
                 f"{self.size=})",
             ]
         )
-
-
-def initialize_boids(num_boids: int) -> list:
-    return [Boid() for _ in range(num_boids)]
