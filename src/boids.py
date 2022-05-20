@@ -53,6 +53,27 @@ class Boid:
         # Update the boid's velocity
         self.velocity += delta
 
+    def avoid_other_boids(
+        self, boids: list, min_distance: float = 20, avoid_factor: float = 1
+    ):
+        """Avoid other boids that are too close"""
+        delta = Vector2(0, 0)
+        for other_boid in boids:
+            # Skip checking the boid itself
+            if other_boid is self:
+                continue
+
+            # Calculate the distance between the boids
+            distance = self.position.distance_to(other_boid.position)
+
+            # If the distance is less than the minimum, apply the avoidance
+            if distance < min_distance:
+                # Calculate the vector to the other boid
+                delta += self.position - other_boid.position
+
+            # Apply the vector to the boid
+            self.velocity += delta * avoid_factor
+
 
 if __name__ == "__main__":
     a = Boid(position=Vector2(0, 0), velocity=(1, 1), color=(0, 0, 0), size=1)

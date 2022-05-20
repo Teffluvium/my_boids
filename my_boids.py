@@ -82,28 +82,6 @@ def move_boid(boid):
     )
 
 
-def avoid_other_boids(boid):
-    """Avoid other boids that are too close"""
-    global boids
-
-    delta = pg.Vector2(0, 0)
-    for other_boid in boids:
-        # Skip checking the boid itself
-        if other_boid is boid:
-            continue
-
-        # Calculate the distance between the boids
-        distance = boid.position.distance_to(other_boid.position)
-
-        # If the distance is less than the minimum, apply the avoidance
-        if distance < BOID_MIN_DISTANCE:
-            # Calculate the vector to the other boid
-            delta += boid.position - other_boid.position
-
-        # Apply the vector to the boid
-        boid.velocity += delta * BOID_AVOID_FACTOR
-
-
 def match_velocity(boid):
     """Match the velocity of the boid with the velocity of the flock"""
     global boids
@@ -150,7 +128,8 @@ def main():
             # Apply movement rules
             # fly_to_center_of_mass(boid)
             boid.fly_to_center_of_mass(boids, BOID_VELOCITY_FACTOR)
-            avoid_other_boids(boid)
+            # avoid_other_boids(boid)
+            boid.avoid_other_boids(boids, BOID_MIN_DISTANCE, BOID_AVOID_FACTOR)
             match_velocity(boid)
             clamp_speed(boid)
 
