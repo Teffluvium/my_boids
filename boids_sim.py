@@ -19,9 +19,6 @@ BOID_MATCHING_FACTOR = 0.01
 
 rng = np.random.default_rng()
 
-# Create global variable for the boids
-boids = []
-
 
 def init_boids(num_boids: int) -> list:
     """Initialize the list of boids
@@ -82,53 +79,67 @@ def move_boid(boid):
     )
 
 
-def main():
-    # Initialize the boids
-    global boids
-    boids = init_boids(NUMBOIDS)
-    # [print(b) for b in boids]
+def update_boids(boids: list, screen):
+    for boid in boids:
+        # Erease current boid
+        draw_boid(screen, boid, color="black")
 
+        # Apply movement rules
+        boid.fly_to_center_of_mass(boids, BOID_VELOCITY_FACTOR)
+        boid.avoid_other_boids(boids, BOID_MIN_DISTANCE, BOID_AVOID_FACTOR)
+        boid.match_velocity(boids, BOID_MATCHING_FACTOR)
+        boid.speed_limit(BOID_MAXSPEED)
+
+        move_boid(boid)
+
+        # Draw the updated boid
+        draw_boid(screen, boid)
+
+
+def update_events():
+    done = False
+    for event in pg.event.get():
+        # Close window or hit escape
+        if event.type == pg.QUIT or (
+            event.type == pg.KEYUP and event.key == pg.K_ESCAPE
+        ):
+            done = True
+            break
+        elif event.type == pg.KEYDOWN:
+            pass
+        elif event.type == pg.MOUSEBUTTONDOWN:
+            WINCENTER[:] = list(event.pos)
+
+    return done
+
+
+def main():
     # Initialize pygame
-    pg.init()
     screen = pg.display.set_mode(WINSIZE)
     pg.display.set_caption("Boids")
     clock = pg.time.Clock()
-
     screen.fill((0, 0, 0))
+
+    # Initialize the boids
+    boids = init_boids(NUMBOIDS)
 
     # Main game loop
     done = False
     while not done:
-        for boid in boids:
-            # Erease current boid
-            draw_boid(screen, boid, color="black")
-
-            # Apply movement rules
-            boid.fly_to_center_of_mass(boids, BOID_VELOCITY_FACTOR)
-            boid.avoid_other_boids(boids, BOID_MIN_DISTANCE, BOID_AVOID_FACTOR)
-            boid.match_velocity(boids, BOID_MATCHING_FACTOR)
-            boid.speed_limit(BOID_MAXSPEED)
-
-            move_boid(boid)
-
-            # Draw the updated boid
-            draw_boid(screen, boid)
+        # Update the flock of boids
+        update_boids(boids, screen)
 
         pg.display.update()
-        for event in pg.event.get():
-            # Close window or hit escape
-            if event.type == pg.QUIT or (
-                event.type == pg.KEYUP and event.key == pg.K_ESCAPE
-            ):
-                done = True
-                break
-            elif event.type == pg.KEYDOWN:
-                pass
-            elif event.type == pg.MOUSEBUTTONDOWN:
-                WINCENTER[:] = list(event.pos)
+
+        # Check for events
+        done = update_events()
+
         clock.tick(50)
-    pg.quit()
 
 
 if __name__ == "__main__":
+    pg.init()
+
     main()
+
+    pg.quit()

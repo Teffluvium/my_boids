@@ -1,8 +1,11 @@
+"""
+Create a boid and define its movement rules
+"""
 from dataclasses import dataclass
 from typing import Tuple
 
 import numpy as np
-from pygame.math import Vector2
+from pygame.math import Vector2  # pylint: disable=no-name-in-module
 
 rng = np.random.default_rng()
 
