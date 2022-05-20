@@ -37,6 +37,22 @@ class Boid:
             ]
         )
 
+    def fly_to_center_of_mass(self, boids: list, velocity_factor: float = 1):
+        """Move the boid towards the perceived center of mass of the flock"""
+        num_boids = len(boids)
+
+        # Calculate the center of mass
+        sum_of_x = sum(b.position[0] for b in boids)
+        sum_of_x -= self.position[0]
+        sum_of_y = sum(b.position[1] for b in boids)
+        sum_of_y -= self.position[1]
+        center_of_mass = Vector2(sum_of_x / (num_boids - 1), sum_of_y / (num_boids - 1))
+
+        delta = (center_of_mass - self.position) * velocity_factor
+
+        # Update the boid's velocity
+        self.velocity += delta
+
 
 if __name__ == "__main__":
     a = Boid(position=Vector2(0, 0), velocity=(1, 1), color=(0, 0, 0), size=1)

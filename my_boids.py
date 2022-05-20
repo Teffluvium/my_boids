@@ -82,23 +82,6 @@ def move_boid(boid):
     )
 
 
-def fly_to_center_of_mass(boid):
-    """Move the boid towards the perceived center of mass of the flock"""
-    global boids
-
-    # Calculate the center of mass
-    sum_of_x = sum(b.position[0] for b in boids)
-    sum_of_x -= boid.position[0]
-    sum_of_y = sum(b.position[1] for b in boids)
-    sum_of_y -= boid.position[1]
-    center_of_mass = pg.Vector2(sum_of_x / (NUMBOIDS - 1), sum_of_y / (NUMBOIDS - 1))
-
-    delta = (center_of_mass - boid.position) * BOID_VELOCITY_FACTOR
-
-    # Update the boid's velocity
-    boid.velocity += delta
-
-
 def avoid_other_boids(boid):
     """Avoid other boids that are too close"""
     global boids
@@ -165,7 +148,8 @@ def main():
             draw_boid(screen, boid, color="black")
 
             # Apply movement rules
-            fly_to_center_of_mass(boid)
+            # fly_to_center_of_mass(boid)
+            boid.fly_to_center_of_mass(boids, BOID_VELOCITY_FACTOR)
             avoid_other_boids(boid)
             match_velocity(boid)
             clamp_speed(boid)
