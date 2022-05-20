@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from math import sqrt
 from typing import Tuple
 
 import numpy as np
@@ -74,10 +73,33 @@ class Boid:
             # Apply the vector to the boid
             self.velocity += delta * avoid_factor
 
+    def match_velocity(self, boids: list, matching_factor: float = 1):
+        """Match the velocity of the boid with the velocity of the flock"""
+        num_boids = len(boids)
+
+        # Calculate the average velocity of the flock
+        sum_of_x = sum(b.velocity[0] for b in boids)
+        sum_of_x -= self.velocity[0]
+        sum_of_y = sum(b.velocity[1] for b in boids)
+        sum_of_y -= self.velocity[1]
+        average_velocity = Vector2(
+            sum_of_x / (num_boids - 1), sum_of_y / (num_boids - 1)
+        )
+
+        # Update the boid's velocity
+        self.velocity += average_velocity * matching_factor
+
+    def speed_limit(self, max_speed: float = 5):
+        """Limit the speed of the boid"""
+        speed = self.velocity.magnitude()
+        # Apply a speed limit
+        if speed > max_speed:
+            self.velocity *= max_speed / speed
+
 
 if __name__ == "__main__":
-    a = Boid(position=Vector2(0, 0), velocity=(1, 1), color=(0, 0, 0), size=1)
-    b = Boid(position=Vector2(0, 1), velocity=(1, 1), color=(0, 0, 0), size=1)
+    a = Boid(position=Vector2(0, 0), velocity=Vector2(1, 1), color=(0, 0, 0), size=1)
+    b = Boid(position=Vector2(0, 1), velocity=Vector2(1, 1), color=(0, 0, 0), size=1)
 
     print(a == b)
     print(f"{a = }")

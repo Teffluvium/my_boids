@@ -82,28 +82,6 @@ def move_boid(boid):
     )
 
 
-def match_velocity(boid):
-    """Match the velocity of the boid with the velocity of the flock"""
-    global boids
-
-    # Calculate the average velocity of the flock
-    sum_of_x = sum(b.velocity[0] for b in boids)
-    sum_of_x -= boid.velocity[0]
-    sum_of_y = sum(b.velocity[1] for b in boids)
-    sum_of_y -= boid.velocity[1]
-    average_velocity = pg.Vector2(sum_of_x / (NUMBOIDS - 1), sum_of_y / (NUMBOIDS - 1))
-
-    # Update the boid's velocity
-    boid.velocity += average_velocity * BOID_MATCHING_FACTOR
-
-
-def clamp_speed(boid):
-    speed = boid.velocity.magnitude()
-    # Apply a speed limit
-    if speed > BOID_MAXSPEED:
-        boid.velocity = boid.velocity * (BOID_MAXSPEED / speed)
-
-
 def main():
     # Initialize the boids
     global boids
@@ -126,12 +104,10 @@ def main():
             draw_boid(screen, boid, color="black")
 
             # Apply movement rules
-            # fly_to_center_of_mass(boid)
             boid.fly_to_center_of_mass(boids, BOID_VELOCITY_FACTOR)
-            # avoid_other_boids(boid)
             boid.avoid_other_boids(boids, BOID_MIN_DISTANCE, BOID_AVOID_FACTOR)
-            match_velocity(boid)
-            clamp_speed(boid)
+            boid.match_velocity(boids, BOID_MATCHING_FACTOR)
+            boid.speed_limit(BOID_MAXSPEED)
 
             move_boid(boid)
 
