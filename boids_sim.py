@@ -1,3 +1,4 @@
+"""Run the Boids Simulation"""
 import numpy as np
 import pygame as pg
 
@@ -80,6 +81,7 @@ def move_boid(boid):
 
 
 def update_boids(boids: list, screen):
+    """Update the all of the boids"""
     for boid in boids:
         # Erease current boid
         draw_boid(screen, boid, color="black")
@@ -96,7 +98,8 @@ def update_boids(boids: list, screen):
         draw_boid(screen, boid)
 
 
-def update_events():
+def check_events() -> bool:
+    """Check for events and return True if the game should be closed"""
     done = False
     for event in pg.event.get():
         # Close window or hit escape
@@ -114,6 +117,7 @@ def update_events():
 
 
 def main():
+    """The Main Function"""
     # Initialize pygame
     screen = pg.display.set_mode(WINSIZE)
     pg.display.set_caption("Boids")
@@ -132,7 +136,7 @@ def main():
         pg.display.update()
 
         # Check for events
-        done = update_events()
+        done = check_events()
 
         clock.tick(50)
 

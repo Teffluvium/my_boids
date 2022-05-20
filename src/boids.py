@@ -9,6 +9,14 @@ from pygame.math import Vector2  # pylint: disable=no-name-in-module
 
 rng = np.random.default_rng()
 
+# Boid Constants
+SIZE = 5
+MAX_SPEED = 3
+VELOCITY_FACTOR = 0.001  # How much to update the boid's velocity
+MIN_DISTANCE = 20
+AVOID_FACTOR = 0.01
+MATCHING_FACTOR = 0.01
+
 
 @dataclass
 class Boid:
@@ -17,7 +25,7 @@ class Boid:
     position: Vector2 = Vector2(0, 0)
     velocity: Vector2 = Vector2(0, 0)
     color: Tuple[int, int, int] = (255, 0, 0)
-    size: int = 1
+    size: int = SIZE
 
     @property
     def angle(self):
@@ -39,7 +47,9 @@ class Boid:
             ]
         )
 
-    def fly_to_center_of_mass(self, boids: list, velocity_factor: float = 1):
+    def fly_to_center_of_mass(
+        self, boids: list, velocity_factor: float = VELOCITY_FACTOR
+    ):
         """Move the boid towards the perceived center of mass of the flock"""
         num_boids = len(boids)
 
@@ -56,7 +66,7 @@ class Boid:
         self.velocity += delta
 
     def avoid_other_boids(
-        self, boids: list, min_distance: float = 20, avoid_factor: float = 1
+        self, boids: list, min_distance: float = 20, avoid_factor: float = AVOID_FACTOR
     ):
         """Avoid other boids that are too close"""
         delta = Vector2(0, 0)
@@ -76,7 +86,7 @@ class Boid:
             # Apply the vector to the boid
             self.velocity += delta * avoid_factor
 
-    def match_velocity(self, boids: list, matching_factor: float = 1):
+    def match_velocity(self, boids: list, matching_factor: float = MATCHING_FACTOR):
         """Match the velocity of the boid with the velocity of the flock"""
         num_boids = len(boids)
 
@@ -92,7 +102,7 @@ class Boid:
         # Update the boid's velocity
         self.velocity += average_velocity * matching_factor
 
-    def speed_limit(self, max_speed: float = 5):
+    def speed_limit(self, max_speed: float = MAX_SPEED):
         """Limit the speed of the boid"""
         speed = self.velocity.magnitude()
         # Apply a speed limit
