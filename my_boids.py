@@ -1,6 +1,3 @@
-# import math
-from math import sqrt
-
 import numpy as np
 import pygame as pg
 
@@ -39,8 +36,8 @@ def init_boids(num_boids: int) -> list:
     boids_list = []
     for _ in range(num_boids):
         boid = Boid(
-            position=rng.integers(0, high=WINSIZE, size=2).tolist(),
-            velocity=rng.integers(0, high=WINSIZE, size=2).tolist(),
+            position=pg.Vector2(rng.integers(0, high=WINSIZE, size=2).tolist()),
+            velocity=pg.Vector2(rng.integers(0, high=WINSIZE, size=2).tolist()),
             color=rng.integers(20, 255, 3).tolist(),
             size=BOID_SIZE,
         )
@@ -70,10 +67,7 @@ def draw_boid(screen, boid, color=None):
         screen,
         color=color,
         start_pos=boid.position,
-        end_pos=(
-            boid.position[0] + boid.velocity[0],
-            boid.position[1] + boid.velocity[1],
-        ),
+        end_pos=boid.position + boid.velocity,
     )
 
 
@@ -82,7 +76,7 @@ def move_boid(boid):
     boid.move()
 
     # Make boids wrap around the screen
-    boid.position = (
+    boid.position.update(
         boid.position[0] % WINSIZE[0],
         boid.position[1] % WINSIZE[1],
     )
@@ -97,42 +91,34 @@ def fly_to_center_of_mass(boid):
     sum_of_x -= boid.position[0]
     sum_of_y = sum(b.position[1] for b in boids)
     sum_of_y -= boid.position[1]
-    center_of_mass = (sum_of_x / (NUMBOIDS - 1), sum_of_y / (NUMBOIDS - 1))
+    center_of_mass = pg.Vector2(sum_of_x / (NUMBOIDS - 1), sum_of_y / (NUMBOIDS - 1))
 
-    delta_x = (center_of_mass[0] - boid.position[0]) * BOID_VELOCITY_FACTOR
-    delta_y = (center_of_mass[1] - boid.position[1]) * BOID_VELOCITY_FACTOR
+    delta = (center_of_mass - boid.position) * BOID_VELOCITY_FACTOR
 
     # Update the boid's velocity
-    boid.velocity[0] += delta_x
-    boid.velocity[1] += delta_y
+    boid.velocity += delta
 
 
 def avoid_other_boids(boid):
     """Avoid other boids that are too close"""
     global boids
 
-    delta_x = 0
-    delta_y = 0
+    delta = pg.Vector2(0, 0)
     for other_boid in boids:
         # Skip checking the boid itself
         if other_boid is boid:
             continue
 
         # Calculate the distance between the boids
-        distance = sqrt(
-            (boid.position[0] - other_boid.position[0]) ** 2
-            + (boid.position[1] - other_boid.position[1]) ** 2
-        )
+        distance = boid.position.distance_to(other_boid.position)
 
         # If the distance is less than the minimum, apply the avoidance
         if distance < BOID_MIN_DISTANCE:
             # Calculate the vector to the other boid
-            delta_x += boid.position[0] - other_boid.position[0]
-            delta_y += boid.position[1] - other_boid.position[1]
+            delta += boid.position - other_boid.position
 
         # Apply the vector to the boid
-        boid.velocity[0] += delta_x * BOID_AVOID_FACTOR
-        boid.velocity[1] += delta_y * BOID_AVOID_FACTOR
+        boid.velocity += delta * BOID_AVOID_FACTOR
 
 
 def match_velocity(boid):
@@ -144,21 +130,17 @@ def match_velocity(boid):
     sum_of_x -= boid.velocity[0]
     sum_of_y = sum(b.velocity[1] for b in boids)
     sum_of_y -= boid.velocity[1]
-    average_velocity = (sum_of_x / (NUMBOIDS - 1), sum_of_y / (NUMBOIDS - 1))
+    average_velocity = pg.Vector2(sum_of_x / (NUMBOIDS - 1), sum_of_y / (NUMBOIDS - 1))
 
     # Update the boid's velocity
-    boid.velocity[0] += average_velocity[0] * BOID_MATCHING_FACTOR
-    boid.velocity[1] += average_velocity[1] * BOID_MATCHING_FACTOR
+    boid.velocity += average_velocity * BOID_MATCHING_FACTOR
 
 
 def clamp_speed(boid):
-    speed = boid.speed
+    speed = boid.velocity.magnitude()
     # Apply a speed limit
     if speed > BOID_MAXSPEED:
-        boid.velocity = [
-            boid.velocity[0] * BOID_MAXSPEED / speed,
-            boid.velocity[1] * BOID_MAXSPEED / speed,
-        ]
+        boid.velocity = boid.velocity * (BOID_MAXSPEED / speed)
 
 
 def main():
