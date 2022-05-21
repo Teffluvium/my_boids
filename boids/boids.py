@@ -27,6 +27,32 @@ class Boid:
     color: Tuple[int, int, int] = (255, 0, 0)
     size: int = SIZE
 
+    def __post_init__(self):
+        """Validate parameters"""
+        # Ensure that position and velocity are Vector2 objects
+        if self.position is not Vector2:
+            self.position = Vector2(self.position)
+        if self.velocity is not Vector2:
+            self.velocity = Vector2(self.velocity)
+        
+        # Ensure color is a tuple and has 3 elements
+        if len(self.color) != 3:
+            raise ValueError("Color must be a tuple of 3 elements")
+        if self.color is not Tuple:
+            try:
+                self.color = tuple(self.color)
+            except TypeError:
+                raise TypeError("Color must be a tuple of 3 elements")
+        
+        # Ensure color is bounded between 0 and 255
+        if any(self.color) < 0:
+            raise ValueError("Color values cannot be negative")
+        if any(self.color) > 255:
+            raise ValueError("Color values cannot be greater than 255")
+        if self.size < 0:
+            raise ValueError("Size cannot be negative")
+
+
     def move(self):
         """Move the boid"""
         # Update the position relative to the velocity
