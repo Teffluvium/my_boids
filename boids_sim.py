@@ -49,8 +49,8 @@ def init_boids(num_boids: int) -> list:
     boids_list = []
     for _ in range(num_boids):
         boid = Boid(
-            position=pg.Vector2(rng.integers(0, high=WINSIZE, size=2).tolist()),
-            velocity=pg.Vector2(rng.integers(0, high=WINSIZE, size=2).tolist()),
+            pos=pg.Vector2(rng.integers(0, high=WINSIZE, size=2).tolist()),
+            vel=pg.Vector2(rng.integers(0, high=WINSIZE, size=2).tolist()),
             color=rng.integers(20, 255, 3).tolist(),
             size=BOID_SIZE,
         )
@@ -72,15 +72,15 @@ def draw_boid(screen, boid, color=None):
     pg.draw.circle(
         screen,
         color=color,
-        center=boid.position,
+        center=boid.pos,
         radius=boid.size,
     )
     # Draw the velociy vector
     pg.draw.line(
         screen,
         color=color,
-        start_pos=boid.position,
-        end_pos=boid.position + boid.velocity,
+        start_pos=boid.pos,
+        end_pos=boid.pos + boid.vel,
     )
 
 
@@ -97,9 +97,9 @@ def move_boid(boid):
 
 def wrap_around_screen(boid):
     """Make boids wrap around the screen"""
-    boid.position.update(
-        boid.position[0] % WINSIZE[0],
-        boid.position[1] % WINSIZE[1],
+    boid.pos.update(
+        boid.pos[0] % WINSIZE[0],
+        boid.pos[1] % WINSIZE[1],
     )
 
 
@@ -107,15 +107,15 @@ def keep_within_bounds(boid):
     """Keep boid within screen bounds"""
     margin = 30
     turn_factor = 1
-    if boid.position[0] < margin:
-        boid.velocity[0] += turn_factor
-    elif boid.position[0] > (WINSIZE[0] - margin):
-        boid.velocity[0] -= turn_factor
+    if boid.pos[0] < margin:
+        boid.vel[0] += turn_factor
+    elif boid.pos[0] > (WINSIZE[0] - margin):
+        boid.vel[0] -= turn_factor
 
-    if boid.position[1] < margin:
-        boid.velocity[1] += turn_factor
-    elif boid.position[1] > (WINSIZE[1] - margin):
-        boid.velocity[1] -= turn_factor
+    if boid.pos[1] < margin:
+        boid.vel[1] += turn_factor
+    elif boid.pos[1] > (WINSIZE[1] - margin):
+        boid.vel[1] -= turn_factor
 
 
 def update_boids(boids: list, screen):
