@@ -2,9 +2,9 @@
 
 Python implementation of Boids using the PyGame engine for the visualization.
 
-## 1. Installation and Running
+## 1. Installation
 
-### Installation
+### Virtual Environment
 Create a Python virtual environment and activate it.
 ```
 python -m venv .venv
