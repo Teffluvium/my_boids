@@ -2,11 +2,10 @@
 import numpy as np
 import pygame as pg
 
-from boids import Boid
+from boids.boids import Boid
 
 # Constants
-WINSIZE = [1000, 1000]
-# WINSIZE = [640, 480]
+WINSIZE = [800, 600]
 WINCENTER = [320, 240]
 NUMBOIDS = 5
 

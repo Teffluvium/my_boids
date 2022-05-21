@@ -27,11 +27,6 @@ class Boid:
     color: Tuple[int, int, int] = (255, 0, 0)
     size: int = SIZE
 
-    @property
-    def angle(self):
-        """Calculate the angle of the boid"""
-        return np.rad2deg(np.arctan2(self.velocity[1], self.velocity[0]))
-
     def move(self):
         """Move the boid"""
         # Update the position relative to the velocity
