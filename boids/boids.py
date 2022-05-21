@@ -10,9 +10,9 @@ from pygame.math import Vector2  # pylint: disable=no-name-in-module
 rng = np.random.default_rng()
 
 # Boid Constants
-SIZE = 5
+SIZE = 10
 MAX_SPEED = 3
-COHESION_FACTOR = 0.001  # How much to update the boid's velocity
+COHESION_FACTOR = 0.001
 SEPARATION = 20
 AVOID_FACTOR = 0.01
 ALIGNMENT_FACTOR = 0.01

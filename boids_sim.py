@@ -12,7 +12,7 @@ WINSIZE = [800, 600]
 # Number of boids
 NUM_BOIDS = 7
 # Size of the boids
-BOID_SIZE = 5
+BOID_SIZE = 10
 # Maximum speed of the boids
 BOID_MAX_SPEED = 3
 # Amount that the boids move towards the center of the flock
@@ -73,7 +73,7 @@ def draw_boid(screen, boid, color=None):
         screen,
         color=color,
         center=boid.pos,
-        radius=boid.size,
+        radius=boid.size / 2,
     )
     # Draw the velociy vector
     pg.draw.line(
