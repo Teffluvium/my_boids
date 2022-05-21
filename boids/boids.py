@@ -77,8 +77,10 @@ class Boid:
 
         # Calculate the center of mass
         sum_of_x = sum(b.position[0] for b in boids)
-        sum_of_x -= self.position[0]
         sum_of_y = sum(b.position[1] for b in boids)
+        
+        # Subtract the boid's own position contribution
+        sum_of_x -= self.position[0]
         sum_of_y -= self.position[1]
         center_of_mass = Vector2(
             sum_of_x / (num_boids - 1),
@@ -118,9 +120,12 @@ class Boid:
 
         # Calculate the average velocity of the flock
         sum_of_x = sum(b.velocity[0] for b in boids)
-        sum_of_x -= self.velocity[0]
         sum_of_y = sum(b.velocity[1] for b in boids)
+        
+        # Subtract the boid's own velocity contribution
+        sum_of_x -= self.velocity[0]
         sum_of_y -= self.velocity[1]
+
         average_velocity = Vector2(
             sum_of_x / (num_boids - 1),
             sum_of_y / (num_boids - 1),
