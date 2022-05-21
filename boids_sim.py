@@ -8,6 +8,7 @@ import pygame as pg
 from boids.boids import Boid
 from boids.movement import BoundaryType, move_boid
 
+# Load parameters from config file
 config = configparser.ConfigParser()
 config.read("config.ini")
 
@@ -82,12 +83,13 @@ def update_boids(boids: list, screen):
         # Erease current boid
         draw_boid(screen, boid, color="black")
 
-        # Apply movement rules
+        # Apply movement rules to adjust velocity
         boid.cohesion(boids, BOID_COHESION_FACTOR)
         boid.avoid_other_boids(boids, BOID_SEPARATION, BOID_AVOID_FACTOR)
         boid.match_velocity(boids, BOID_ALIGNMENT_FACTOR)
         boid.speed_limit(BOID_MAX_SPEED)
 
+        # Move the boid (i.e., update position)
         move_boid(boid, boundary_type=USE_BOUNDARY_TYPE, window_size=WINSIZE)
 
         # Draw the updated boid
