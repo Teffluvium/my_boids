@@ -6,15 +6,22 @@ from boids.boids import Boid
 
 # Constants
 WINSIZE = [800, 600]
-WINCENTER = [320, 240]
-NUMBOIDS = 5
+# WINCENTER = [320, 240]
 
+# Number of boids
+NUM_BOIDS = 7
+# Size of the boids
 BOID_SIZE = 5
+# Maximum speed of the boids
 BOID_MAXSPEED = 3
-BOID_VELOCITY_FACTOR = 0.001  # How much to update the boid's velocity
-BOID_MIN_DISTANCE = 20
+# Amount that the boids move towards the center of the flock
+BOID_COHESION_FACTOR = 0.001
+# Desired separation between boids
+BOID_SEPARATION = 20
+# Amount that the boids move away from each other
 BOID_AVOID_FACTOR = 0.01
-BOID_MATCHING_FACTOR = 0.01
+# Amount that the boids try to match the velocity of the flock
+BOID_ALIGNMENT_FACTOR = 0.01
 
 
 rng = np.random.default_rng()
@@ -86,9 +93,9 @@ def update_boids(boids: list, screen):
         draw_boid(screen, boid, color="black")
 
         # Apply movement rules
-        boid.fly_to_center_of_mass(boids, BOID_VELOCITY_FACTOR)
-        boid.avoid_other_boids(boids, BOID_MIN_DISTANCE, BOID_AVOID_FACTOR)
-        boid.match_velocity(boids, BOID_MATCHING_FACTOR)
+        boid.cohesion(boids, BOID_COHESION_FACTOR)
+        boid.avoid_other_boids(boids, BOID_SEPARATION, BOID_AVOID_FACTOR)
+        boid.match_velocity(boids, BOID_ALIGNMENT_FACTOR)
         boid.speed_limit(BOID_MAXSPEED)
 
         move_boid(boid)
@@ -109,8 +116,8 @@ def check_events() -> bool:
             break
         elif event.type == pg.KEYDOWN:
             pass
-        elif event.type == pg.MOUSEBUTTONDOWN:
-            WINCENTER[:] = list(event.pos)
+        # elif event.type == pg.MOUSEBUTTONDOWN:
+        #     WINCENTER[:] = list(event.pos)
 
     return done
 
@@ -124,7 +131,7 @@ def main():
     screen.fill((0, 0, 0))
 
     # Initialize the boids
-    boids = init_boids(NUMBOIDS)
+    boids = init_boids(NUM_BOIDS)
 
     # Main game loop
     done = False

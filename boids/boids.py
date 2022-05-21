@@ -12,10 +12,10 @@ rng = np.random.default_rng()
 # Boid Constants
 SIZE = 5
 MAX_SPEED = 3
-VELOCITY_FACTOR = 0.001  # How much to update the boid's velocity
-MIN_DISTANCE = 20
+COHESION_FACTOR = 0.001  # How much to update the boid's velocity
+SEPARATION = 20
 AVOID_FACTOR = 0.01
-MATCHING_FACTOR = 0.01
+ALIGNMENT_FACTOR = 0.01
 
 
 @dataclass
@@ -34,7 +34,7 @@ class Boid:
             self.position = Vector2(self.position)
         if self.velocity is not Vector2:
             self.velocity = Vector2(self.velocity)
-        
+
         # Ensure color is a tuple and has 3 elements
         if len(self.color) != 3:
             raise ValueError("Color must be a tuple of 3 elements")
@@ -43,7 +43,7 @@ class Boid:
                 self.color = tuple(self.color)
             except TypeError:
                 raise TypeError("Color must be a tuple of 3 elements")
-        
+
         # Ensure color is bounded between 0 and 255
         if any(self.color) < 0:
             raise ValueError("Color values cannot be negative")
@@ -51,7 +51,6 @@ class Boid:
             raise ValueError("Color values cannot be greater than 255")
         if self.size < 0:
             raise ValueError("Size cannot be negative")
-
 
     def move(self):
         """Move the boid"""
@@ -68,8 +67,10 @@ class Boid:
             ]
         )
 
-    def fly_to_center_of_mass(
-        self, boids: list, velocity_factor: float = VELOCITY_FACTOR
+    def cohesion(
+        self,
+        boids: list,
+        cohesion_factor: float = COHESION_FACTOR,
     ):
         """Move the boid towards the perceived center of mass of the flock"""
         num_boids = len(boids)
@@ -79,15 +80,16 @@ class Boid:
         sum_of_x -= self.position[0]
         sum_of_y = sum(b.position[1] for b in boids)
         sum_of_y -= self.position[1]
-        center_of_mass = Vector2(sum_of_x / (num_boids - 1), sum_of_y / (num_boids - 1))
-
-        delta = (center_of_mass - self.position) * velocity_factor
+        center_of_mass = Vector2(
+            sum_of_x / (num_boids - 1),
+            sum_of_y / (num_boids - 1),
+        )
 
         # Update the boid's velocity
-        self.velocity += delta
+        self.velocity += (center_of_mass - self.position) * cohesion_factor
 
     def avoid_other_boids(
-        self, boids: list, min_distance: float = 20, avoid_factor: float = AVOID_FACTOR
+        self, boids: list, separation: float = SEPARATION, avoid_factor: float = AVOID_FACTOR
     ):
         """Avoid other boids that are too close"""
         delta = Vector2(0, 0)
@@ -100,14 +102,14 @@ class Boid:
             distance = self.position.distance_to(other_boid.position)
 
             # If the distance is less than the minimum, apply the avoidance
-            if distance < min_distance:
+            if distance < separation:
                 # Calculate the vector to the other boid
                 delta += self.position - other_boid.position
 
             # Apply the vector to the boid
             self.velocity += delta * avoid_factor
 
-    def match_velocity(self, boids: list, matching_factor: float = MATCHING_FACTOR):
+    def match_velocity(self, boids: list, alignment_factor: float = ALIGNMENT_FACTOR):
         """Match the velocity of the boid with the velocity of the flock"""
         num_boids = len(boids)
 
@@ -121,7 +123,7 @@ class Boid:
         )
 
         # Update the boid's velocity
-        self.velocity += average_velocity * matching_factor
+        self.velocity += average_velocity * alignment_factor
 
     def speed_limit(self, max_speed: float = MAX_SPEED):
         """Limit the speed of the boid"""
