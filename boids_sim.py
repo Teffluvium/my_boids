@@ -90,9 +90,6 @@ def update_boids(boids: list, screen):
 
         move_boid(boid, boundary_type=USE_BOUNDARY_TYPE, window_size=WINSIZE)
 
-        # Draw the boid
-        draw_boid(screen, boid)
-
         # Draw the updated boid
         draw_boid(screen, boid)
 
