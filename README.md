@@ -2,8 +2,7 @@
 
 Python implementation of Boids using the PyGame engine for the visualization.
 
-## Installation and Running
-
+## 1. Installation and Running
 
 ### Installation
 Create a Python virtual environment and activate it.
@@ -11,6 +10,7 @@ Create a Python virtual environment and activate it.
 python -m venv .venv
 ```
 
+#### Activate the virtual environment
 Windows virtual environment activation
 ```
 .venv/Scripts/activate
@@ -21,17 +21,18 @@ Mac or Linux virtural environment activation
 source .venv/bin/activate
 ```
 
-Install the required packages
+#### Install requirements
+This simulation requires the numpy and pygame packages.  These can be installed via `pip` andn the `requirements.txt` file.
 ```
 pip install -r requirements.txt
 ```
 
-### Running the Simulation
+## 2. Running the Simulation
 
 Run the script `boids_sim.py` to see the Boids in action.
 
 
-## Simulation Performance
+## 3. Simulation Performance
 Adjust the following configuration parameters at the top of the `boids_sim.py` file to modify the simulation behavior:
 
 - Number of boids <br>
@@ -49,7 +50,7 @@ Adjust the following configuration parameters at the top of the `boids_sim.py` f
 - Amount that the boids try to match the velocity of the flock <br>
     `BOID_ALIGNMENT_FACTOR = 0.01`
 
-## Additional references for Boids
+## 4. Additional references for Boids
 - [Background and Update by Conrad Parker](http://www.red3d.com/cwr/boids/)
 - [Conrad Parker psuedocode](http://www.kfish.org/boids/pseudocode.html): Original psuedocode and explanations
 - [Smarter Every Day Git Repo](https://github.com/beneater/boids): JavaScript version of Boids
