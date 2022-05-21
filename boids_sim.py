@@ -1,37 +1,29 @@
 """Run the Boids Simulation"""
-from enum import Enum, auto
+import configparser
+import json
+
 import numpy as np
 import pygame as pg
 
 from boids.boids import Boid
+from boids.movement import BoundaryType, move_boid
 
-# Constants
-WINSIZE = [800, 600]
-# WINCENTER = [320, 240]
+config = configparser.ConfigParser()
+config.read("config.ini")
 
-# Number of boids
-NUM_BOIDS = 7
-# Size of the boids
-BOID_SIZE = 10
-# Maximum speed of the boids
-BOID_MAX_SPEED = 3
-# Amount that the boids move towards the center of the flock
-BOID_COHESION_FACTOR = 0.001
-# Desired separation between boids
-BOID_SEPARATION = 20
-# Amount that the boids move away from each other
-BOID_AVOID_FACTOR = 0.01
-# Amount that the boids try to match the velocity of the flock
-BOID_ALIGNMENT_FACTOR = 0.01
+# Get screen parameters from config file
+WINSIZE = json.loads(config["screen"]["winsize"])
+USE_BOUNDARY_TYPE = BoundaryType[config["screen"]["boundary_type"].upper()]
 
+# Get Boid parameters from config file
+NUM_BOIDS = int(config["boids"]["num_boids"])
+BOID_SIZE = int(config["boids"]["size"])
+BOID_MAX_SPEED = float(config["boids"]["max_speed"])
+BOID_COHESION_FACTOR = float(config["boids"]["cohesion_factor"])
+BOID_SEPARATION = float(config["boids"]["separation"])
+BOID_AVOID_FACTOR = float(config["boids"]["avoid_factor"])
+BOID_ALIGNMENT_FACTOR = float(config["boids"]["alignment_factor"])
 
-class BoundaryType(Enum):
-    """Enum for boid behavior when they hit the boundary"""
-    BOUNCE = auto()
-    WRAP = auto()
-
-
-USE_BOUNDARY_TYPE = BoundaryType.BOUNCE
 
 rng = np.random.default_rng()
 
@@ -84,40 +76,6 @@ def draw_boid(screen, boid, color=None):
     )
 
 
-def move_boid(boid):
-    """Move the boid according to its velocity"""
-    boid.move()
-
-    # Select the boundary type
-    if USE_BOUNDARY_TYPE == BoundaryType.WRAP:
-        wrap_around_screen(boid)
-    elif USE_BOUNDARY_TYPE == BoundaryType.BOUNCE:
-        keep_within_bounds(boid)
-
-
-def wrap_around_screen(boid):
-    """Make boids wrap around the screen"""
-    boid.pos.update(
-        boid.pos[0] % WINSIZE[0],
-        boid.pos[1] % WINSIZE[1],
-    )
-
-
-def keep_within_bounds(boid):
-    """Keep boid within screen bounds"""
-    margin = 30
-    turn_factor = 1
-    if boid.pos[0] < margin:
-        boid.vel[0] += turn_factor
-    elif boid.pos[0] > (WINSIZE[0] - margin):
-        boid.vel[0] -= turn_factor
-
-    if boid.pos[1] < margin:
-        boid.vel[1] += turn_factor
-    elif boid.pos[1] > (WINSIZE[1] - margin):
-        boid.vel[1] -= turn_factor
-
-
 def update_boids(boids: list, screen):
     """Update the all of the boids"""
     for boid in boids:
@@ -130,7 +88,10 @@ def update_boids(boids: list, screen):
         boid.match_velocity(boids, BOID_ALIGNMENT_FACTOR)
         boid.speed_limit(BOID_MAX_SPEED)
 
-        move_boid(boid)
+        move_boid(boid, boundary_type=USE_BOUNDARY_TYPE, window_size=WINSIZE)
+
+        # Draw the boid
+        draw_boid(screen, boid)
 
         # Draw the updated boid
         draw_boid(screen, boid)

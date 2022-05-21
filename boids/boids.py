@@ -41,8 +41,8 @@ class Boid:
         if self.color is not Tuple:
             try:
                 self.color = tuple(self.color)
-            except TypeError as e:
-                raise TypeError("Color must be a tuple of 3 elements") from e
+            except TypeError as err:
+                raise TypeError("Color must be a tuple of 3 elements") from err
 
         # Ensure color is bounded between 0 and 255
         if any(self.color) < 0:
@@ -78,7 +78,7 @@ class Boid:
         # Calculate the center of mass
         sum_of_x = sum(b.pos[0] for b in boids)
         sum_of_y = sum(b.pos[1] for b in boids)
-        
+
         # Subtract the boid's own position contribution
         sum_of_x -= self.pos[0]
         sum_of_y -= self.pos[1]
@@ -121,7 +121,7 @@ class Boid:
         # Calculate the average velocity of the flock
         sum_of_x = sum(b.vel[0] for b in boids)
         sum_of_y = sum(b.vel[1] for b in boids)
-        
+
         # Subtract the boid's own velocity contribution
         sum_of_x -= self.vel[0]
         sum_of_y -= self.vel[1]

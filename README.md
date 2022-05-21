@@ -32,26 +32,31 @@ pip install -r requirements.txt
 Run the script `boids_sim.py` to see the Boids in action.
 
 
-## 3. Simulation Performance
-Adjust the following configuration parameters at the top of the `boids_sim.py` file to modify the simulation behavior:
+## 3. Simulation Settings
+Adjust the parameters in the `[screen]` section of `config.ini` to change some general game settings:
+- Screen dimensions in pixels: [width, height] <br>
+    `winsize = [800, 600]`
+- Select the boundary type at the edge of the screen: either WRAP or BOUNCE
+    `boundary_type = BOUNCE`
 
+
+Adjust the `[boid]` parameters at in the file `config.ini` to modify the boid behaviour in the simulation:
 - Number of boids <br>
-    `NUM_BOIDS = 7`
+    `num_boids = 7`
 - Size of the boids <br>
-    `BOID_SIZE = 5`
+    `size = 5`
 - Maximum speed of the boids <br>
-    `BOID_MAX_SPEED = 3`
+    `max_speed = 3`
 - Amount that the boids move towards the center of the flock <br>
-    `BOID_COHESION_FACTOR = 0.001`
+    `cohesion_factor = 0.001`
 - Desired separation between boids <br>
-    `BOID_SEPARATION = 20`
+    `separation = 20`
 - Amount that the boids move away from each other <br>
-    `BOID_AVOID_FACTOR = 0.01`
+    `avoid_factor = 0.01`
 - Amount that the boids try to match the velocity of the flock <br>
-    `BOID_ALIGNMENT_FACTOR = 0.01`
-- Movement behaviour at boundaries <br>
-    `USE_BOUNDARY_TYPE = BoundaryType.WRAP` or <br>
-    `USE_BOUNDARY_TYPE = BoundaryType.BOUNCE`
+    `alignment_factor = 0.01`
+
+
 
 ## 4. Additional references for Boids
 - [Background and Update by Conrad Parker](http://www.red3d.com/cwr/boids/)
