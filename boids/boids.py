@@ -41,8 +41,8 @@ class Boid:
         if self.color is not Tuple:
             try:
                 self.color = tuple(self.color)
-            except TypeError:
-                raise TypeError("Color must be a tuple of 3 elements")
+            except TypeError as e:
+                raise TypeError("Color must be a tuple of 3 elements") from e
 
         # Ensure color is bounded between 0 and 255
         if any(self.color) < 0:
@@ -89,7 +89,10 @@ class Boid:
         self.velocity += (center_of_mass - self.position) * cohesion_factor
 
     def avoid_other_boids(
-        self, boids: list, separation: float = SEPARATION, avoid_factor: float = AVOID_FACTOR
+        self,
+        boids: list,
+        separation: float = SEPARATION,
+        avoid_factor: float = AVOID_FACTOR,
     ):
         """Avoid other boids that are too close"""
         delta = Vector2(0, 0)
@@ -119,7 +122,8 @@ class Boid:
         sum_of_y = sum(b.velocity[1] for b in boids)
         sum_of_y -= self.velocity[1]
         average_velocity = Vector2(
-            sum_of_x / (num_boids - 1), sum_of_y / (num_boids - 1)
+            sum_of_x / (num_boids - 1),
+            sum_of_y / (num_boids - 1),
         )
 
         # Update the boid's velocity

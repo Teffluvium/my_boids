@@ -1,4 +1,5 @@
 """Run the Boids Simulation"""
+from enum import Enum, auto
 import numpy as np
 import pygame as pg
 
@@ -13,7 +14,7 @@ NUM_BOIDS = 7
 # Size of the boids
 BOID_SIZE = 5
 # Maximum speed of the boids
-BOID_MAXSPEED = 3
+BOID_MAX_SPEED = 3
 # Amount that the boids move towards the center of the flock
 BOID_COHESION_FACTOR = 0.001
 # Desired separation between boids
@@ -23,6 +24,14 @@ BOID_AVOID_FACTOR = 0.01
 # Amount that the boids try to match the velocity of the flock
 BOID_ALIGNMENT_FACTOR = 0.01
 
+
+class BoundaryType(Enum):
+    """Enum for boid behavior when they hit the boundary"""
+    BOUNCE = auto()
+    WRAP = auto()
+
+
+USE_BOUNDARY_TYPE = BoundaryType.BOUNCE
 
 rng = np.random.default_rng()
 
@@ -79,11 +88,34 @@ def move_boid(boid):
     """Move the boid according to its velocity"""
     boid.move()
 
-    # Make boids wrap around the screen
+    # Select the boundary type
+    if USE_BOUNDARY_TYPE == BoundaryType.WRAP:
+        wrap_around_screen(boid)
+    elif USE_BOUNDARY_TYPE == BoundaryType.BOUNCE:
+        keep_within_bounds(boid)
+
+
+def wrap_around_screen(boid):
+    """Make boids wrap around the screen"""
     boid.position.update(
         boid.position[0] % WINSIZE[0],
         boid.position[1] % WINSIZE[1],
     )
+
+
+def keep_within_bounds(boid):
+    """Keep boid within screen bounds"""
+    margin = 30
+    turn_factor = 1
+    if boid.position[0] < margin:
+        boid.velocity[0] += turn_factor
+    elif boid.position[0] > (WINSIZE[0] - margin):
+        boid.velocity[0] -= turn_factor
+
+    if boid.position[1] < margin:
+        boid.velocity[1] += turn_factor
+    elif boid.position[1] > (WINSIZE[1] - margin):
+        boid.velocity[1] -= turn_factor
 
 
 def update_boids(boids: list, screen):
@@ -96,7 +128,7 @@ def update_boids(boids: list, screen):
         boid.cohesion(boids, BOID_COHESION_FACTOR)
         boid.avoid_other_boids(boids, BOID_SEPARATION, BOID_AVOID_FACTOR)
         boid.match_velocity(boids, BOID_ALIGNMENT_FACTOR)
-        boid.speed_limit(BOID_MAXSPEED)
+        boid.speed_limit(BOID_MAX_SPEED)
 
         move_boid(boid)
 
