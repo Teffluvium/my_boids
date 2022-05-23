@@ -15,6 +15,7 @@ COHESION_FACTOR = 0.001
 SEPARATION = 20
 AVOID_FACTOR = 0.01
 ALIGNMENT_FACTOR = 0.01
+VISUAL_RANGE = 100
 
 
 @dataclass
@@ -61,24 +62,52 @@ class Boid:
         self,
         boids: list,
         cohesion_factor: float = COHESION_FACTOR,
+        visual_range: float = VISUAL_RANGE,
     ):
         """Move the boid towards the perceived center of mass of the flock"""
-        num_boids = len(boids)
+        num_boids = 0
 
-        # Calculate the center of mass
-        sum_of_x = sum(b.pos[0] for b in boids)
-        sum_of_y = sum(b.pos[1] for b in boids)
+        # Add contribution from each boid in the flock, as long as they are
+        # within the visual range
+        sum_of_x = 0
+        sum_of_y = 0
+        for boid in boids:
+            if boid.pos.distance_to(self.pos) < visual_range:
+                sum_of_x += boid.pos[0]
+                sum_of_y += boid.pos[1]
+                num_boids += 1
 
-        # Subtract the boid's own position contribution
-        sum_of_x -= self.pos[0]
-        sum_of_y -= self.pos[1]
-        center_of_mass = pg.Vector2(
-            sum_of_x / (num_boids - 1),
-            sum_of_y / (num_boids - 1),
-        )
+        # There should at least 2 boids, yourself and another boid
+        if num_boids >= 2:
+            # Subract the boid's own position contribution
+            sum_of_x -= self.pos[0]
+            sum_of_y -= self.pos[1]
 
-        # Update the boid's velocity
-        self.vel += (center_of_mass - self.pos) * cohesion_factor  # type: ignore
+            # Calculate the center of mass
+            center_of_mass = pg.Vector2(
+                sum_of_x / (num_boids - 1),
+                sum_of_y / (num_boids - 1),
+            )
+
+            # Update the boid's velocity
+            self.vel += (center_of_mass - self.pos) * cohesion_factor  # type: ignore
+
+        # num_boids = len(boids)
+
+        # # Calculate the center of mass
+        # sum_of_x = sum(b.pos[0] for b in boids)
+        # sum_of_y = sum(b.pos[1] for b in boids)
+
+        # # Subtract the boid's own position contribution
+        # sum_of_x -= self.pos[0]
+        # sum_of_y -= self.pos[1]
+        # center_of_mass = pg.Vector2(
+        #     sum_of_x / (num_boids - 1),
+        #     sum_of_y / (num_boids - 1),
+        # )
+
+        # # Update the boid's velocity
+        # self.vel += (center_of_mass - self.pos) * cohesion_factor  # type: ignore
 
     def avoid_other_boids(
         self,

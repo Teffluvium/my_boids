@@ -121,10 +121,23 @@ def test_boid_move(boid_with_vector_init):
     assert boid_with_vector_init.vel == pg.Vector2(3, 4)
 
 
-def test_boid_cohesion(boid_list):
+@pytest.mark.parametrize(
+    "index, visual_range, expected",
+    [
+        (0, 100, (0, 10)),  # boid_list[0] All boids are within visual range
+        (1, 100, (5.5, 0)),  # boid_list[1] All boids is within visual range
+        (1, 5, (6, 5)),  # boid_list[1] One boid is within visual range
+    ],
+)
+def test_boid_cohesion(boid_list, index, visual_range, expected):
     """Test the cohesion method"""
-    boid_list[0].cohesion(boid_list, cohesion_factor=1)
-    assert boid_list[0].vel == pg.Vector2(0, 10)
+    boid = boid_list[index]
+    boid.cohesion(
+        boid_list,
+        cohesion_factor=1,
+        visual_range=visual_range,
+    )
+    assert boid.vel == pg.Vector2(expected)
 
 
 def test_boid_avoidance(boid_list):
