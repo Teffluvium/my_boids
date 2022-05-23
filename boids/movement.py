@@ -35,16 +35,27 @@ def wrap_around_screen(boid: Boid, window_size: Tuple[int, int]):
     )
 
 
-def keep_within_bounds(boid: Boid, window_size: Tuple[int, int]):
+def keep_within_bounds(
+    boid: Boid,
+    window_size: Tuple[int, int],
+    margin: int = 30,
+    turn_factor: float = 1,
+):
     """Keep boid within screen bounds"""
-    margin = 30
-    turn_factor = 1
-    if boid.pos[0] < margin:
-        boid.vel[0] += turn_factor
-    elif boid.pos[0] > (window_size[0] - margin):
-        boid.vel[0] -= turn_factor
 
-    if boid.pos[1] < margin:
-        boid.vel[1] += turn_factor
-    elif boid.pos[1] > (window_size[1] - margin):
-        boid.vel[1] -= turn_factor
+    def adjust_vel(pos, vel, window_size) -> float:
+        """Adjust velocity component to keep boid within bounds"""
+        if pos < margin:
+            vel += turn_factor
+        elif pos > window_size - margin:
+            vel -= turn_factor
+
+        return vel
+
+    # Calculate the new velocity
+    vel = [0.0, 0.0]
+    vel[0] = adjust_vel(boid.pos[0], boid.vel[0], window_size[0])
+    vel[1] = adjust_vel(boid.pos[1], boid.vel[1], window_size[1])
+
+    # Update the boid's velocity
+    boid.vel.update(vel)
