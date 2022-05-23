@@ -11,7 +11,11 @@ class BoundaryType(Enum):
     WRAP = auto()
 
 
-def move_boid(boid: Boid, boundary_type: BoundaryType, window_size: tuple[int, int]):
+def move_boid(
+    boid: Boid,
+    boundary_type: BoundaryType,
+    window_size: tuple[int, int],
+):
     """Move the boid according to its velocity"""
     boid.move()
 

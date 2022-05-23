@@ -115,7 +115,11 @@ class Boid:
             # Apply the vector to the boid
             self.vel += delta * avoid_factor
 
-    def match_velocity(self, boids: list, alignment_factor: float = ALIGNMENT_FACTOR):
+    def match_velocity(
+        self,
+        boids: list,
+        alignment_factor: float = ALIGNMENT_FACTOR,
+    ):
         """Match the velocity of the boid with the velocity of the flock"""
         num_boids = len(boids)
 
