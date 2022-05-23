@@ -111,8 +111,8 @@ class Boid:
                 # Calculate the vector to the other boid
                 delta += self.pos - other_boid.pos
 
-            # Apply the vector to the boid
-            self.vel += delta * avoid_factor
+        # Apply the vector to the boid
+        self.vel += delta * avoid_factor
 
     def match_velocity(
         self,

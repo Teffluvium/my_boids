@@ -15,6 +15,31 @@ def fixture_boid_with_vector_init():
     )
 
 
+@pytest.fixture(name="boid_list")
+def fixture_boid_list():
+    """Return a list of boids"""
+    return [
+        Boid(
+            pos=(0, 0),
+            vel=(0, 0),
+            color=(0, 0, 0),
+            size=1,
+        ),
+        Boid(
+            pos=(-1, 10),
+            vel=(4, 5),
+            color=(0, 0, 0),
+            size=1,
+        ),
+        Boid(
+            pos=(1, 10),
+            vel=(-4, 5),
+            color=(0, 0, 0),
+            size=1,
+        ),
+    ]
+
+
 def test_default_boid():
     """Test the default boid"""
     boid = Boid()
@@ -93,3 +118,19 @@ def test_boid_move(boid_with_vector_init):
     boid_with_vector_init.move()
     assert boid_with_vector_init.pos == pg.Vector2(4, 6)
     assert boid_with_vector_init.vel == pg.Vector2(3, 4)
+
+
+def test_boid_cohesion(boid_list):
+    """Test the cohesion method"""
+    boid_list[0].cohesion(boid_list, cohesion_factor=1)
+    assert boid_list[0].vel == pg.Vector2(0, 10)
+
+
+def test_boid_avoidance(boid_list):
+    """Test the avoidance method"""
+    boid_list[0].avoid_other_boids(
+        boid_list,
+        separation=20,
+        avoid_factor=.1,
+    )
+    assert boid_list[0].vel == pg.Vector2(0, -2)
