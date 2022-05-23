@@ -131,6 +131,30 @@ def test_boid_avoidance(boid_list):
     boid_list[0].avoid_other_boids(
         boid_list,
         separation=20,
-        avoid_factor=.1,
+        avoid_factor=0.1,
     )
     assert boid_list[0].vel == pg.Vector2(0, -2)
+
+
+def test_boid_match_velocity(boid_list):
+    """Test the match_velocity method"""
+    boid_list[0].match_velocity(boid_list, alignment_factor=1)
+    assert boid_list[0].vel == pg.Vector2(0, 5)
+
+
+@pytest.mark.parametrize(
+    "boid,expected",
+    [
+        (Boid(vel=(0, 10)), pg.Vector2(0, 5)),
+        (Boid(vel=(10, 0)), pg.Vector2(5, 0)),
+        (Boid(vel=(0, -10)), pg.Vector2(0, -5)),
+        (Boid(vel=(6, 8)), pg.Vector2(3, 4)),
+        (Boid(vel=(-6, 8)), pg.Vector2(-3, 4)),
+        (Boid(vel=(6, -8)), pg.Vector2(3, -4)),
+        (Boid(vel=(-6, -8)), pg.Vector2(-3, -4)),
+    ],
+)
+def test_boid_speed_limit(boid, expected):
+    """Test the speed_limit method"""
+    boid.speed_limit(max_speed=5)
+    assert boid.vel == expected

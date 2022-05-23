@@ -134,8 +134,8 @@ class Boid:
         speed = self.vel.magnitude()
         # Apply a speed limit
         if speed > max_speed:
-            self.vel *= max_speed / speed
+            self.vel.scale_to_length(max_speed)
 
 
 if __name__ == "__main__":
-    pass
+    """The Main"""
