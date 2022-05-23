@@ -28,7 +28,6 @@ def test_valid_boid_with_vector_init(boid_with_vector_init):
     """Initialize a boid with vector arguments"""
     boid = boid_with_vector_init
     assert boid.pos == pg.Vector2(1, 2)
-    assert type(boid.pos) is pg.Vector2
     assert boid.vel == pg.Vector2(3, 4)
     assert boid.color == pg.Color(0, 0, 0)
     assert boid.size == 1
@@ -44,6 +43,8 @@ def test_valid_boid_with_tuple_init():
     )
     assert boid.pos == pg.Vector2(1, 2)
     assert boid.vel == pg.Vector2(3, 4)
+    assert type(boid.pos) is pg.Vector2
+    assert type(boid.vel) is pg.Vector2
     assert boid.color == pg.Color(0, 0, 0)
     assert boid.size == 1
 

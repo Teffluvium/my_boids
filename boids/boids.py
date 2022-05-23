@@ -5,8 +5,7 @@ from dataclasses import dataclass
 from typing import Tuple
 
 import numpy as np
-from pygame.math import Vector2  # pylint: disable=no-name-in-module
-from pygame import Color
+import pygame as pg
 
 rng = np.random.default_rng()
 
@@ -23,25 +22,25 @@ ALIGNMENT_FACTOR = 0.01
 class Boid:
     """A single boid in the flock"""
 
-    pos: Vector2 = Vector2(0, 0)
-    vel: Vector2 = Vector2(0, 0)
-    color: Tuple[int, int, int] = (255, 255, 255)
+    pos: pg.Vector2 = pg.Vector2(0, 0)
+    vel: pg.Vector2 = pg.Vector2(0, 0)
+    color: pg.Color = pg.Color(255, 255, 255)
     size: int = SIZE
 
     def __post_init__(self):
         """Validate parameters"""
         # Ensure that position and velocity are Vector2 objects
-        if self.pos is not Vector2:
-            self.pos = Vector2(self.pos)
-        if self.vel is not Vector2:
-            self.vel = Vector2(self.vel)
+        if self.pos is not pg.Vector2:
+            self.pos = pg.Vector2(self.pos)
+        if self.vel is not pg.Vector2:
+            self.vel = pg.Vector2(self.vel)
 
         # Ensure color is a tuple and has 3 or 4 elements
         if len(self.color) not in [3, 4]:
             raise ValueError("Color must be a tuple of 3 or 4elements")
-        if self.color is not Color:
+        if self.color is not pg.Color:
             try:
-                self.color = Color(self.color)
+                self.color = pg.Color(self.color)
             except TypeError as err:
                 raise TypeError("Color must be a tuple of 3 elements") from err
 
@@ -83,7 +82,7 @@ class Boid:
         # Subtract the boid's own position contribution
         sum_of_x -= self.pos[0]
         sum_of_y -= self.pos[1]
-        center_of_mass = Vector2(
+        center_of_mass = pg.Vector2(
             sum_of_x / (num_boids - 1),
             sum_of_y / (num_boids - 1),
         )
@@ -98,7 +97,7 @@ class Boid:
         avoid_factor: float = AVOID_FACTOR,
     ):
         """Avoid other boids that are too close"""
-        delta = Vector2(0, 0)
+        delta = pg.Vector2(0, 0)
         for other_boid in boids:
             # Skip checking the boid itself
             if other_boid is self:
@@ -131,7 +130,7 @@ class Boid:
         sum_of_x -= self.vel[0]
         sum_of_y -= self.vel[1]
 
-        average_velocity = Vector2(
+        average_velocity = pg.Vector2(
             sum_of_x / (num_boids - 1),
             sum_of_y / (num_boids - 1),
         )
@@ -148,17 +147,18 @@ class Boid:
 
 
 if __name__ == "__main__":
-    a = Boid(pos=Vector2(0, 0), vel=Vector2(1, 1), color=(0, 0, 0), size=1)
-    b = Boid(pos=Vector2(0, 1), vel=Vector2(1, 1), color=(0, 0, 0), size=1)
+    pass
+    # a = Boid(pos=pg.Vector2(0, 0), vel=pg.Vector2(1, 1), color=(0, 0, 0), size=1)
+    # b = Boid(pos=pg.Vector2(0, 1), vel=pg.Vector2(1, 1), color=(0, 0, 0), size=1)
 
-    print(a == b)
-    print(f"{a = }")
-    print(type(a.pos))
-    print(a.pos.distance_to(b.pos))
+    # print(a == b)
+    # print(f"{a = }")
+    # print(type(a.pos))
+    # print(a.pos.distance_to(b.pos))
 
-    c = Vector2(1, 1)
-    print(f"{c = }")
-    print(type(c))
+    # c = pg.Vector2(1, 1)
+    # print(f"{c = }")
+    # print(type(c))
 
-    d = Vector2(c)
-    print(f"{d = }")
+    # d = pg.Vector2(c)
+    # print(f"{d = }")
