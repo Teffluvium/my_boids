@@ -4,14 +4,19 @@ import pytest
 from boids.boids import Boid
 from boids.movement import wrap_around_screen
 
-@pytest.fixture(name="screen_size")
-def fixture_screen_size():
-    """Return a screen size"""
+
+@pytest.fixture(name="window_size")
+def fixture_window_size():
+    """Return a window size"""
     return (800, 600)
+
 
 @pytest.mark.parametrize(
     "pos, expected",
     [
+        ((14, 0), (4, 0)),
+        ((0, 14), (0, 4)),
+        ((14, 14), (4, 4)),
         ((-1, 0), (9, 0)),
         ((0, -1), (0, 9)),
         ((-1, -1), (9, 9)),

@@ -2,7 +2,6 @@
 Create a boid and define its movement rules
 """
 from dataclasses import dataclass
-from typing import Tuple
 
 import numpy as np
 import pygame as pg
@@ -30,9 +29,9 @@ class Boid:
     def __post_init__(self):
         """Validate parameters"""
         # Ensure that position and velocity are Vector2 objects
-        if self.pos is not pg.Vector2:
+        if not isinstance(self.pos, pg.Vector2):
             self.pos = pg.Vector2(self.pos)
-        if self.vel is not pg.Vector2:
+        if not isinstance(self.vel, pg.Vector2):
             self.vel = pg.Vector2(self.vel)
 
         # Ensure color is a tuple and has 3 or 4 elements
@@ -46,7 +45,7 @@ class Boid:
     def move(self):
         """Move the boid"""
         # Update the position relative to the velocity
-        self.pos += self.vel
+        self.pos += self.vel  # type: ignore
 
     def __str__(self):
         return ", ".join(
@@ -79,7 +78,7 @@ class Boid:
         )
 
         # Update the boid's velocity
-        self.vel += (center_of_mass - self.pos) * cohesion_factor
+        self.vel += (center_of_mass - self.pos) * cohesion_factor  # type: ignore
 
     def avoid_other_boids(
         self,
@@ -127,7 +126,7 @@ class Boid:
         )
 
         # Update the boid's velocity
-        self.vel += average_velocity * alignment_factor
+        self.vel += average_velocity * alignment_factor  # type: ignore
 
     def speed_limit(self, max_speed: float = MAX_SPEED):
         """Limit the speed of the boid"""
@@ -139,3 +138,4 @@ class Boid:
 
 if __name__ == "__main__":
     """The Main"""
+    print("Boids")

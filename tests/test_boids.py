@@ -66,10 +66,11 @@ def test_valid_boid_with_tuple_init():
         color=(0, 0, 0),
         size=1,
     )
-    assert boid.pos == pg.Vector2(1, 2)
-    assert boid.vel == pg.Vector2(3, 4)
     assert type(boid.pos) is pg.Vector2
     assert type(boid.vel) is pg.Vector2
+    assert type(boid.color) is pg.Color
+    assert boid.pos == pg.Vector2(1, 2)
+    assert boid.vel == pg.Vector2(3, 4)
     assert boid.color == pg.Color(0, 0, 0)
     assert boid.size == 1
 
