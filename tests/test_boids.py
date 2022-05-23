@@ -150,10 +150,23 @@ def test_boid_avoidance(boid_list):
     assert boid_list[0].vel == pg.Vector2(0, -2)
 
 
-def test_boid_match_velocity(boid_list):
+@pytest.mark.parametrize(
+    "index, visual_range, expected",
+    [
+        (0, 100, (0, 5)),  # boid_list[0] All boids are within visual range
+        (1, 100, (-2, 2.5)),  # boid_list[1] All boids is within visual range
+        (1, 5, (-4, 5)),  # boid_list[1] One boid is within visual range
+    ],
+)
+def test_boid_match_velocity(boid_list, index, visual_range, expected):
     """Test the match_velocity method"""
-    boid_list[0].match_velocity(boid_list, alignment_factor=1)
-    assert boid_list[0].vel == pg.Vector2(0, 5)
+    boid = boid_list[index]
+    boid.match_velocity(
+        boid_list,
+        alignment_factor=1,
+        visual_range=visual_range,
+    )
+    assert boid.vel == pg.Vector2(expected)
 
 
 @pytest.mark.parametrize(
