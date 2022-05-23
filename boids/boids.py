@@ -36,19 +36,10 @@ class Boid:
             self.vel = pg.Vector2(self.vel)
 
         # Ensure color is a tuple and has 3 or 4 elements
-        if len(self.color) not in [3, 4]:
-            raise ValueError("Color must be a tuple of 3 or 4elements")
         if self.color is not pg.Color:
-            try:
-                self.color = pg.Color(self.color)
-            except TypeError as err:
-                raise TypeError("Color must be a tuple of 3 elements") from err
+            self.color = pg.Color(self.color)
 
-        # Ensure color is bounded between 0 and 255
-        if any(self.color) < 0:
-            raise ValueError("Color values cannot be negative")
-        if any(self.color) > 255:
-            raise ValueError("Color values cannot be greater than 255")
+        # Check size is a positive
         if self.size < 0:
             raise ValueError("Size cannot be negative")
 
@@ -148,17 +139,3 @@ class Boid:
 
 if __name__ == "__main__":
     pass
-    # a = Boid(pos=pg.Vector2(0, 0), vel=pg.Vector2(1, 1), color=(0, 0, 0), size=1)
-    # b = Boid(pos=pg.Vector2(0, 1), vel=pg.Vector2(1, 1), color=(0, 0, 0), size=1)
-
-    # print(a == b)
-    # print(f"{a = }")
-    # print(type(a.pos))
-    # print(a.pos.distance_to(b.pos))
-
-    # c = pg.Vector2(1, 1)
-    # print(f"{c = }")
-    # print(type(c))
-
-    # d = pg.Vector2(c)
-    # print(f"{d = }")
