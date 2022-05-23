@@ -6,6 +6,7 @@ from typing import Tuple
 
 import numpy as np
 from pygame.math import Vector2  # pylint: disable=no-name-in-module
+from pygame import Color
 
 rng = np.random.default_rng()
 
@@ -24,7 +25,7 @@ class Boid:
 
     pos: Vector2 = Vector2(0, 0)
     vel: Vector2 = Vector2(0, 0)
-    color: Tuple[int, int, int] = (255, 0, 0)
+    color: Tuple[int, int, int] = (255, 255, 255)
     size: int = SIZE
 
     def __post_init__(self):
@@ -35,12 +36,12 @@ class Boid:
         if self.vel is not Vector2:
             self.vel = Vector2(self.vel)
 
-        # Ensure color is a tuple and has 3 elements
-        if len(self.color) != 3:
-            raise ValueError("Color must be a tuple of 3 elements")
-        if self.color is not Tuple:
+        # Ensure color is a tuple and has 3 or 4 elements
+        if len(self.color) not in [3, 4]:
+            raise ValueError("Color must be a tuple of 3 or 4elements")
+        if self.color is not Color:
             try:
-                self.color = tuple(self.color)
+                self.color = Color(self.color)
             except TypeError as err:
                 raise TypeError("Color must be a tuple of 3 elements") from err
 
@@ -60,10 +61,10 @@ class Boid:
     def __str__(self):
         return ", ".join(
             [
-                f"Boid({self.pos=}",
-                f"{self.vel=}",
-                f"{self.color=}",
-                f"{self.size=})",
+                f"Boid(pos={self.pos}",
+                f"vel={self.vel}",
+                f"color={self.color}",
+                f"size={self.size})",
             ]
         )
 
