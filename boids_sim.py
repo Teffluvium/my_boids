@@ -46,7 +46,7 @@ def init_boids(num_boids: int) -> list:
         boid = Boid(
             pos=pg.Vector2(rng.integers(0, high=WINSIZE, size=2).tolist()),
             vel=pg.Vector2(rng.integers(0, high=WINSIZE, size=2).tolist()),
-            color=rng.integers(20, 255, 3).tolist(),
+            color=rng.integers(30, 255, 3).tolist(),
             size=BOID_SIZE,
         )
         boids_list.append(boid)
