@@ -46,7 +46,7 @@ class Boid:
     def move(self):
         """Move the boid"""
         # Update the position relative to the velocity
-        self.pos += self.vel  # type: ignore
+        self.pos += self.vel
 
     def __str__(self):
         return ", ".join(
@@ -84,7 +84,7 @@ class Boid:
             center_of_mass = sum_positions / (num_boids - 1)
 
             # Update the boid's velocity
-            self.vel += (center_of_mass - self.pos) * cohesion_factor  # type: ignore
+            self.vel += (center_of_mass - self.pos) * cohesion_factor
 
     def avoid_other_boids(
         self,
@@ -136,7 +136,7 @@ class Boid:
             average_velocity = sum_velocity / (num_boids - 1)
 
             # Update the boid's velocity
-            self.vel += (average_velocity - self.vel) * alignment_factor  # type: ignore
+            self.vel += (average_velocity - self.vel) * alignment_factor
 
     def speed_limit(self, max_speed: float = MAX_SPEED):
         """Limit the speed of the boid"""

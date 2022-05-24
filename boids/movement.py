@@ -32,9 +32,17 @@ def move_boid(
 
     # Select the boundary type and adjust the boid's position and/or velocity
     if boundary_type == BoundaryType.WRAP:
-        wrap_around_screen(boid, window_size)
+        wrap_around_screen(
+            boid,
+            window_size,
+        )
     elif boundary_type == BoundaryType.BOUNCE:
-        keep_within_bounds(boid, window_size, margin=margin, turn_factor=turn_factor)
+        keep_within_bounds(
+            boid,
+            window_size,
+            margin=margin,
+            turn_factor=turn_factor,
+        )
 
 
 def wrap_around_screen(boid: Boid, window_size: Tuple[int, int]) -> None:

@@ -70,8 +70,11 @@ Adjust the `[boid]` parameters at in the file `config.ini` to modify the boid be
     \
     `avoid_factor = 0.01`
 - Amount that the boids try to match the velocity of the flock
-
+    \
     `alignment_factor = 0.01`
+- Radius of boids vision.  Boids will not interact with other boids that exceed this radius
+    \
+    `visual_range = 50`
 
 ## 4. Additional references for Boids
 

@@ -1,6 +1,7 @@
 """Run the Boids Simulation"""
 import configparser
 import json
+from typing import List, Tuple
 
 import numpy as np
 import pygame as pg
@@ -24,6 +25,7 @@ BOID_COHESION_FACTOR = float(config["boids"]["cohesion_factor"])
 BOID_SEPARATION = float(config["boids"]["separation"])
 BOID_AVOID_FACTOR = float(config["boids"]["avoid_factor"])
 BOID_ALIGNMENT_FACTOR = float(config["boids"]["alignment_factor"])
+BOID_VISUAL_RANGE = 100
 
 
 rng = np.random.default_rng()
@@ -52,7 +54,7 @@ def init_boids(num_boids: int) -> list:
     return boids_list
 
 
-def draw_boid(screen, boid, color=None):
+def draw_boid(screen: Tuple[int, int], boid: Boid, color=None):
     """Draw the boid on the screen"""
     # Draw the boids
     override_color = bool(color)
@@ -77,20 +79,35 @@ def draw_boid(screen, boid, color=None):
     )
 
 
-def update_boids(boids: list, screen):
+def update_boids(boids: List[Boid], screen):
     """Update the all of the boids"""
     for boid in boids:
         # Erease current boid
         draw_boid(screen, boid, color="black")
 
         # Apply movement rules to adjust velocity
-        boid.cohesion(boids, BOID_COHESION_FACTOR)
-        boid.avoid_other_boids(boids, BOID_SEPARATION, BOID_AVOID_FACTOR)
-        boid.match_velocity(boids, BOID_ALIGNMENT_FACTOR)
-        boid.speed_limit(BOID_MAX_SPEED)
+        boid.cohesion(
+            boids,
+            cohesion_factor=BOID_COHESION_FACTOR,
+            visual_range=BOID_VISUAL_RANGE,
+        )
+        boid.avoid_other_boids(
+            boids,
+            separation=BOID_SEPARATION,
+            avoid_factor=BOID_AVOID_FACTOR,
+        )
+        boid.match_velocity(
+            boids,
+            alignment_factor=BOID_ALIGNMENT_FACTOR,
+        )
+        boid.speed_limit(max_speed=BOID_MAX_SPEED)
 
         # Move the boid (i.e., update position)
-        move_boid(boid, boundary_type=USE_BOUNDARY_TYPE, window_size=WINSIZE)
+        move_boid(
+            boid,
+            boundary_type=USE_BOUNDARY_TYPE,
+            window_size=WINSIZE,
+        )
 
         # Draw the updated boid
         draw_boid(screen, boid)
