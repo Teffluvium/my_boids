@@ -45,6 +45,9 @@ Adjust the parameters in the `[screen]` section of `config.ini` to change some g
 - Screen dimensions in pixels: [width, height]
     \
     `winsize = [800, 600]`
+- Use fullscreen mode? Will accept values of 'yes'/'no', 'on'/'off', 'true'/'false' and '1'/'0'
+    \
+    `fullscreen = no`
 - Select the boundary type at the edge of the screen: either WRAP or BOUNCE
     \
     `boundary_type = BOUNCE`

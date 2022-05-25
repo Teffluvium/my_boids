@@ -9,45 +9,61 @@ import pygame as pg
 from boids.boids import Boid
 from boids.movement import BoundaryType, move_boid
 
-# Load parameters from config file
-config = configparser.ConfigParser()
-config.read("config.ini")
 
-# Get screen parameters from config file
-WINSIZE = json.loads(config["screen"]["winsize"])
-USE_BOUNDARY_TYPE = BoundaryType[config["screen"]["boundary_type"].upper()]
+class ScreenOptions:
+    """Options for the simulation"""
 
-# Get Boid parameters from config file
-NUM_BOIDS = int(config["boids"]["num_boids"])
-BOID_SIZE = int(config["boids"]["size"])
-BOID_MAX_SPEED = float(config["boids"]["max_speed"])
-BOID_COHESION_FACTOR = float(config["boids"]["cohesion_factor"])
-BOID_SEPARATION = float(config["boids"]["separation"])
-BOID_AVOID_FACTOR = float(config["boids"]["avoid_factor"])
-BOID_ALIGNMENT_FACTOR = float(config["boids"]["alignment_factor"])
-BOID_VISUAL_RANGE = 100
+    def __init__(self):
+        # Load parameters from config file
+        config = configparser.ConfigParser()
+        config.read("config.ini")
+
+        # Get screen parameters from config file
+        self.winsize = json.loads(config["screen"]["winsize"])
+        self.fullscreen = config["screen"].getboolean("fullscreen")
+        self.boundary_type = BoundaryType[config["screen"]["boundary_type"].upper()]
+
+
+class BoidOptions:
+    """Options for the Boids"""
+
+    def __init__(self):
+        # Load parameters from config file
+        config = configparser.ConfigParser()
+        config.read("config.ini")
+
+        # Get Boid parameters from config file
+        self.num_boids = config["boids"].getint("num_boids")
+        self.size = config["boids"].getint("size")
+        self.max_speed = config["boids"].getfloat("max_speed")
+        self.cohesion_factor = config["boids"].getfloat("cohesion_factor")
+        self.separation = config["boids"].getfloat("separation")
+        self.avoid_factor = config["boids"].getfloat("avoid_factor")
+        self.alignment_factor = config["boids"].getfloat("alignment_factor")
+        self.visual_range = config["boids"].getint("visual_range")
 
 
 rng = np.random.default_rng()
 
 
-def init_boids(num_boids: int) -> list:
+def init_boids() -> list:
     """Initialize the list of boids
     Assigns random positions, velocities, and colors
-
-    Args:
-        num_boids (int): number of boids to initialize
 
     Returns:
         list: list of boids
     """
+    screen_opts = ScreenOptions()
+    boid_opts = BoidOptions()
     boids_list = []
-    for _ in range(num_boids):
+    for _ in range(boid_opts.num_boids):
         boid = Boid(
-            pos=pg.Vector2(rng.integers(0, high=WINSIZE, size=2).tolist()),
-            vel=pg.Vector2(rng.uniform(-BOID_MAX_SPEED, BOID_MAX_SPEED, 2).tolist()),
+            pos=pg.Vector2(rng.integers(0, high=screen_opts.winsize, size=2).tolist()),
+            vel=pg.Vector2(
+                rng.uniform(-boid_opts.max_speed, boid_opts.max_speed, 2).tolist()
+            ),
             color=rng.integers(30, 255, 3).tolist(),
-            size=BOID_SIZE,
+            size=boid_opts.size,
         )
         boids_list.append(boid)
 
@@ -81,6 +97,8 @@ def draw_boid(screen: Tuple[int, int], boid: Boid, color=None):
 
 def update_boids(boids: List[Boid], screen):
     """Update the all of the boids"""
+    screen_opts = ScreenOptions()
+    boid_opts = BoidOptions()
     for boid in boids:
         # Erease current boid
         draw_boid(screen, boid, color="black")
@@ -88,25 +106,25 @@ def update_boids(boids: List[Boid], screen):
         # Apply movement rules to adjust velocity
         boid.cohesion(
             boids,
-            cohesion_factor=BOID_COHESION_FACTOR,
-            visual_range=BOID_VISUAL_RANGE,
+            cohesion_factor=boid_opts.cohesion_factor,
+            visual_range=boid_opts.visual_range,
         )
         boid.avoid_other_boids(
             boids,
-            separation=BOID_SEPARATION,
-            avoid_factor=BOID_AVOID_FACTOR,
+            separation=boid_opts.separation,
+            avoid_factor=boid_opts.avoid_factor,
         )
         boid.match_velocity(
             boids,
-            alignment_factor=BOID_ALIGNMENT_FACTOR,
+            alignment_factor=boid_opts.alignment_factor,
         )
-        boid.speed_limit(max_speed=BOID_MAX_SPEED)
+        boid.speed_limit(max_speed=boid_opts.max_speed)
 
         # Move the boid (i.e., update position)
         move_boid(
             boid,
-            boundary_type=USE_BOUNDARY_TYPE,
-            window_size=WINSIZE,
+            boundary_type=screen_opts.boundary_type,
+            window_size=screen_opts.winsize,
         )
 
         # Draw the updated boid
@@ -134,13 +152,18 @@ def check_events() -> bool:
 def main():
     """The Main Function"""
     # Initialize pygame
-    screen = pg.display.set_mode(WINSIZE)
+    screen_opts = ScreenOptions()
+    if screen_opts.fullscreen:
+        screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
+    else:
+        screen = pg.display.set_mode(screen_opts.winsize)
+
     pg.display.set_caption("Boids")
     clock = pg.time.Clock()
     screen.fill((0, 0, 0))
 
     # Initialize the boids
-    boids = init_boids(NUM_BOIDS)
+    boids = init_boids()
 
     # Main game loop
     done = False
