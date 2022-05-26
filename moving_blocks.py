@@ -78,6 +78,9 @@ class Boid(pg.sprite.Sprite):
 
     def update(self):
         """Called each frame."""
+        # self.pos += self.vel
+        # self.rect.x = self.pos.x
+        # self.rect.y = self.pos.y
 
         # Move block down one pixel
         self.rect.y += 1
