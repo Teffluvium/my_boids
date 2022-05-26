@@ -28,7 +28,7 @@ def move_boid(
     """
 
     # Move the boid according to its velocity
-    boid.move()
+    # boid.move()
 
     # Select the boundary type and adjust the boid's position and/or velocity
     if boundary_type == BoundaryType.WRAP:
