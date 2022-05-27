@@ -9,6 +9,7 @@ import pygame as pg
 
 from boids.boid_vs_boundary import BoundaryType, boid_vs_boundary
 from boids.boids import Boid
+from boids.flock_rules import flock_rules
 
 # --- Global constants ---
 SCREEN_WIDTH = 700
@@ -28,89 +29,6 @@ rng = np.random.default_rng()
 
 
 # --- Classes ---
-
-
-def cohesion(
-    boid: Boid,
-    boids: List[Boid],
-    cohesion_factor: float = COHESION_FACTOR,
-    visual_range: float = VISUAL_RANGE,
-):
-    """Move the boid towards the perceived center of mass of the flock"""
-    num_boids = 0
-
-    # Add contribution from each boid in the flock, as long as they are
-    # within the visual range
-    sum_positions = pg.Vector2(0, 0)
-    for other_boid in boids:
-        if other_boid.pos.distance_to(boid.pos) < visual_range:
-            sum_positions += other_boid.pos
-            num_boids += 1
-
-    # There should at least 2 boids, yourself and another boid
-    if num_boids >= 2:
-        # Subract the boid's own position contribution
-        sum_positions -= boid.pos
-
-        # Calculate the center of mass
-        center_of_mass = sum_positions / (num_boids - 1)
-
-        # Update the boid's velocity
-        boid.vel += (center_of_mass - boid.pos) * cohesion_factor
-
-
-def avoid_other_boids(
-    boid: Boid,
-    boids: List[Boid],
-    separation: float = SEPARATION,
-    avoid_factor: float = AVOID_FACTOR,
-):
-    """Avoid other boids that are too close"""
-    delta = pg.Vector2(0, 0)
-    for other_boid in boids:
-        # Skip checking the boid itself
-        if other_boid is boid:
-            continue
-
-        # Calculate the distance between the boids
-        distance = boid.pos.distance_to(other_boid.pos)
-
-        # If the distance is less than the minimum, apply the avoidance
-        if distance < separation:
-            # Calculate the vector to the other boid
-            delta += boid.pos - other_boid.pos
-
-    # Apply the vector to the boid
-    boid.vel += delta * avoid_factor
-
-
-def match_velocity(
-    boid: Boid,
-    boids: List[Boid],
-    alignment_factor: float = ALIGNMENT_FACTOR,
-    visual_range: float = VISUAL_RANGE,
-):
-    """Match the velocity of the boid with the velocity of the flock"""
-    num_boids = 0
-
-    # Calculate the average velocity of the flock, as long as they are
-    # within the visual range
-    sum_velocity = pg.Vector2(0, 0)
-    for other_boid in boids:
-        if other_boid.pos.distance_to(boid.pos) < visual_range:
-            sum_velocity += other_boid.vel
-            num_boids += 1
-
-    # There should at least 2 boids, yourself and another boid
-    if num_boids >= 2:
-        # Subract the boid's own velocity contribution
-        sum_velocity -= boid.vel
-
-        # Calculate the average velocity of other boids
-        average_velocity = sum_velocity / (num_boids - 1)
-
-        # Update the boid's velocity
-        boid.vel += (average_velocity - boid.vel) * alignment_factor
 
 
 class Player(pg.sprite.Sprite):
@@ -189,9 +107,15 @@ class Game(object):
             # TODO: Apply screen edge behavior and movement rules here
             # Incluedes: cohesion, avoid_other_boids, match_velocity, setting boundary_type, and move_boid
             for boid in self.block_list:
-                cohesion(boid, self.block_list)
-                avoid_other_boids(boid, self.block_list)
-                match_velocity(boid, self.block_list)
+                flock_rules(
+                    boid,
+                    self.block_list,
+                    cohesion_factor=COHESION_FACTOR,
+                    separation=SEPARATION,
+                    avoid_factor=AVOID_FACTOR,
+                    alignment_factor=ALIGNMENT_FACTOR,
+                    visual_range=VISUAL_RANGE,
+                )
                 boid.speed_limit(MAX_SPEED)
                 boundary_type = BoundaryType.BOUNCE
                 boid_vs_boundary(
