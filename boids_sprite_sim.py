@@ -2,14 +2,13 @@
 Boid simulation using PyGame and Sprites
 """
 
-from enum import Enum, auto
-from typing import List, Tuple
+from typing import List
 
 import numpy as np
 import pygame as pg
 
+from boids.boid_vs_boundary import BoundaryType, boid_vs_boundary
 from boids.boids import Boid
-from boids.movement import BoundaryType, move_boid
 
 # --- Global constants ---
 SCREEN_WIDTH = 700
@@ -195,7 +194,7 @@ class Game(object):
                 match_velocity(boid, self.block_list)
                 boid.speed_limit(MAX_SPEED)
                 boundary_type = BoundaryType.BOUNCE
-                move_boid(
+                boid_vs_boundary(
                     boid,
                     boundary_type,
                     window_size=(SCREEN_WIDTH, SCREEN_HEIGHT),
