@@ -26,10 +26,6 @@ def move_boid(
         boundary_type (BoundaryType): What to do when the boid hits the edge
         window_size (Tuple[int, int]): Window size in pixels
     """
-
-    # Move the boid according to its velocity
-    # boid.move()
-
     # Select the boundary type and adjust the boid's position and/or velocity
     if boundary_type == BoundaryType.WRAP:
         wrap_around_screen(
