@@ -1,40 +1,28 @@
 """
-Show the proper way to organize a game using the a game class.
- 
-Sample Python/Pygame Programs
-Simpson College Computer Science
-http://programarcadegames.com/
-http://simpson.edu/computer-science/
- 
-Explanation video: http://youtu.be/O4Y5KrNgP_c
+Boid simulation using PyGame and Sprites
 """
 
-import configparser
 from enum import Enum, auto
-from typing import Tuple
+from typing import List, Tuple
 
 import numpy as np
 import pygame as pg
 
 # --- Global constants ---
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-GREEN = (0, 255, 0)
-RED = (255, 0, 0)
-
 SCREEN_WIDTH = 700
 SCREEN_HEIGHT = 500
 
-rng = np.random.default_rng()
-
 # Boid Constants
 SIZE = 10
-MAX_SPEED = 3
-COHESION_FACTOR = 0.001
+MAX_SPEED = 10
+COHESION_FACTOR = 0.005
 SEPARATION = 20
-AVOID_FACTOR = 0.01
+AVOID_FACTOR = 0.05
 ALIGNMENT_FACTOR = 0.01
 VISUAL_RANGE = 100
+
+
+rng = np.random.default_rng()
 
 
 # --- Classes ---
@@ -83,74 +71,13 @@ class Boid(pg.sprite.Sprite):
 
         self.rect.center = self.pos
 
-    def reset_pos(self, window_size: tuple = (SCREEN_WIDTH, SCREEN_HEIGHT)):
-        """Called when the boid 'falls off' the screen."""
-        # TODO: move this function out of Boid class
-        boundary_type = BoundaryType.WRAP
-        move_boid(self, boundary_type, window_size=window_size)
-
     def update(self):
         """Called each frame. Updates the position of the boid."""
         # # Move the boid based on its velocity
         self.pos += self.vel
 
-        # Update boid position relative to the screen boundaries
-        self.reset_pos()
-
         # Update the rectangle position
         self.rect.center = self.pos
-
-    def avoid_other_boids(
-        self,
-        boids: list,
-        separation: float = SEPARATION,
-        avoid_factor: float = AVOID_FACTOR,
-    ):
-        """Avoid other boids that are too close"""
-        delta = pg.Vector2(0, 0)
-        for other_boid in boids:
-            # Skip checking the boid itself
-            if other_boid is self:
-                continue
-
-            # Calculate the distance between the boids
-            distance = self.pos.distance_to(other_boid.pos)
-
-            # If the distance is less than the minimum, apply the avoidance
-            if distance < separation:
-                # Calculate the vector to the other boid
-                delta += self.pos - other_boid.pos
-
-        # Apply the vector to the boid
-        self.vel += delta * avoid_factor
-
-    def match_velocity(
-        self,
-        boids: list,
-        alignment_factor: float = ALIGNMENT_FACTOR,
-        visual_range: float = VISUAL_RANGE,
-    ):
-        """Match the velocity of the boid with the velocity of the flock"""
-        num_boids = 0
-
-        # Calculate the average velocity of the flock, as long as they are
-        # within the visual range
-        sum_velocity = pg.Vector2(0, 0)
-        for boid in boids:
-            if boid.pos.distance_to(self.pos) < visual_range:
-                sum_velocity += boid.vel
-                num_boids += 1
-
-        # There should at least 2 boids, yourself and another boid
-        if num_boids >= 2:
-            # Subract the boid's own velocity contribution
-            sum_velocity -= self.vel
-
-            # Calculate the average velocity of other boids
-            average_velocity = sum_velocity / (num_boids - 1)
-
-            # Update the boid's velocity
-            self.vel += (average_velocity - self.vel) * alignment_factor
 
     def speed_limit(self, max_speed: float = MAX_SPEED):
         """Limit the speed of the boid"""
@@ -158,6 +85,89 @@ class Boid(pg.sprite.Sprite):
         # Apply a speed limit
         if speed > max_speed:
             self.vel.scale_to_length(max_speed)
+
+
+def cohesion(
+    boid: Boid,
+    boids: List[Boid],
+    cohesion_factor: float = COHESION_FACTOR,
+    visual_range: float = VISUAL_RANGE,
+):
+    """Move the boid towards the perceived center of mass of the flock"""
+    num_boids = 0
+
+    # Add contribution from each boid in the flock, as long as they are
+    # within the visual range
+    sum_positions = pg.Vector2(0, 0)
+    for other_boid in boids:
+        if other_boid.pos.distance_to(boid.pos) < visual_range:
+            sum_positions += other_boid.pos
+            num_boids += 1
+
+    # There should at least 2 boids, yourself and another boid
+    if num_boids >= 2:
+        # Subract the boid's own position contribution
+        sum_positions -= boid.pos
+
+        # Calculate the center of mass
+        center_of_mass = sum_positions / (num_boids - 1)
+
+        # Update the boid's velocity
+        boid.vel += (center_of_mass - boid.pos) * cohesion_factor
+
+
+def avoid_other_boids(
+    boid: Boid,
+    boids: List[Boid],
+    separation: float = SEPARATION,
+    avoid_factor: float = AVOID_FACTOR,
+):
+    """Avoid other boids that are too close"""
+    delta = pg.Vector2(0, 0)
+    for other_boid in boids:
+        # Skip checking the boid itself
+        if other_boid is boid:
+            continue
+
+        # Calculate the distance between the boids
+        distance = boid.pos.distance_to(other_boid.pos)
+
+        # If the distance is less than the minimum, apply the avoidance
+        if distance < separation:
+            # Calculate the vector to the other boid
+            delta += boid.pos - other_boid.pos
+
+    # Apply the vector to the boid
+    boid.vel += delta * avoid_factor
+
+
+def match_velocity(
+    boid: Boid,
+    boids: List[Boid],
+    alignment_factor: float = ALIGNMENT_FACTOR,
+    visual_range: float = VISUAL_RANGE,
+):
+    """Match the velocity of the boid with the velocity of the flock"""
+    num_boids = 0
+
+    # Calculate the average velocity of the flock, as long as they are
+    # within the visual range
+    sum_velocity = pg.Vector2(0, 0)
+    for other_boid in boids:
+        if other_boid.pos.distance_to(boid.pos) < visual_range:
+            sum_velocity += other_boid.vel
+            num_boids += 1
+
+    # There should at least 2 boids, yourself and another boid
+    if num_boids >= 2:
+        # Subract the boid's own velocity contribution
+        sum_velocity -= boid.vel
+
+        # Calculate the average velocity of other boids
+        average_velocity = sum_velocity / (num_boids - 1)
+
+        # Update the boid's velocity
+        boid.vel += (average_velocity - boid.vel) * alignment_factor
 
 
 class BoundaryType(Enum):
@@ -257,7 +267,7 @@ class Player(pg.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = pg.Surface([20, 20])
-        self.image.fill(RED)
+        self.image.fill(pg.Color("red"))
         self.rect = self.image.get_rect()
 
     def update(self):
@@ -327,7 +337,16 @@ class Game(object):
             # TODO: Apply screen edge behavior and movement rules here
             # Incluedes: cohesion, avoid_other_boids, match_velocity, setting boundary_type, and move_boid
             for boid in self.block_list:
-                pass
+                cohesion(boid, self.block_list)
+                avoid_other_boids(boid, self.block_list)
+                match_velocity(boid, self.block_list)
+                boid.speed_limit(MAX_SPEED)
+                boundary_type = BoundaryType.WRAP
+                move_boid(
+                    boid,
+                    boundary_type,
+                    window_size=(SCREEN_WIDTH, SCREEN_HEIGHT),
+                )
 
             # See if the player boid has collided with anything.
             blocks_hit_list = pg.sprite.spritecollide(
@@ -338,9 +357,6 @@ class Game(object):
             for boid in blocks_hit_list:
                 self.score += 1
                 print(self.score)
-                print(f"{boid.rect.x=}, {boid.rect.y=}")
-                print(f"{boid.rect.centerx=}, {boid.rect.centery=}")
-                print(f"{boid.rect.center=}")
                 # You can do something with "boid" here.
 
             if len(self.block_list) == 0:
@@ -348,12 +364,12 @@ class Game(object):
 
     def display_frame(self, screen):
         """Display everything to the screen for the game."""
-        screen.fill(WHITE)
+        screen.fill(pg.Color("white"))
 
         if self.game_over:
             # font = pg.font.Font("Serif", 25)
             font = pg.font.SysFont("serif", 25)
-            text = font.render("Game Over, click to restart", True, BLACK)
+            text = font.render("Game Over, click to restart", True, pg.Color("black"))
             center_x = (SCREEN_WIDTH // 2) - (text.get_width() // 2)
             center_y = (SCREEN_HEIGHT // 2) - (text.get_height() // 2)
             screen.blit(text, [center_x, center_y])
