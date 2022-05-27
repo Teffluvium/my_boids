@@ -1,13 +1,13 @@
 """Test the Boids class"""
 import pygame as pg
 import pytest
-from boids.boids import Boid
-from boids.movement import (
+from boids.boid_vs_boundary import (
     BoundaryType,
+    boid_vs_boundary,
     keep_within_bounds,
-    move_boid,
     wrap_around_screen,
 )
+from boids.boids import Boid
 
 
 @pytest.fixture(name="window_size")
@@ -63,23 +63,23 @@ def test_keep_within_bounds(pos, vel, expected):
     assert boid.vel == pg.Vector2(expected)
 
 
-def test_move_boid_with_wrap():
+def test_boid_vs_boundary_with_wrap():
     """Move a boid with wrap around"""
     boid = Boid(pos=(14, 14))  # Top right corner outside of the window
     boundary_type = BoundaryType.WRAP
     window_size = (10, 10)
 
-    move_boid(boid, boundary_type, window_size)
+    boid_vs_boundary(boid, boundary_type, window_size)
     # Position shold get wrapped to the bottom left
     assert boid.pos == pg.Vector2(4, 4)
 
 
-def test_move_boid_with_bounce():
+def test_boid_vs_boundary_with_bounce():
     """Move a boid with bounce"""
     boid = Boid(pos=(21, 21))  # Top right corner inside of the margin
     boundary_type = BoundaryType.BOUNCE
 
-    move_boid(
+    boid_vs_boundary(
         boid,
         boundary_type,
         window_size=(30, 30),

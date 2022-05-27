@@ -26,8 +26,8 @@ class Boid(pg.sprite.Sprite):
 
         ## Validate parameters
         # Ensure that position and velocity are Vector2 objects
-        self.pos = pos if isinstance(pos, pg.Vector2) else pg.Vetor2(pos)
-        self.vel = vel if isinstance(vel, pg.Vector2) else pg.Vetor2(vel)
+        self.pos = pos if isinstance(pos, pg.Vector2) else pg.Vector2(pos)
+        self.vel = vel if isinstance(vel, pg.Vector2) else pg.Vector2(vel)
 
         # Ensure color is a tuple and has 3 or 4 elements
         self.color = color if isinstance(color, pg.Color) else pg.Color(color)
