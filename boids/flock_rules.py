@@ -1,3 +1,4 @@
+"""Define rules for Boid behavior in a flock."""
 from typing import List
 
 import pygame as pg

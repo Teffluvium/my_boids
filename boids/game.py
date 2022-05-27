@@ -1,7 +1,7 @@
 import numpy as np
 import pygame as pg
 
-from boids.boid_vs_boundary import BoundaryType, boid_vs_boundary
+from boids.boid_vs_boundary import boid_vs_boundary
 from boids.boids import Boid
 from boids.flock_rules import flock_rules
 from boids.options import BoidOptions, ScreenOptions
@@ -24,7 +24,7 @@ class Player(pg.sprite.Sprite):
         self.rect.center = pos
 
 
-class Game(object):
+class Game:
     """This class represents an instance of the game. If we need to
     reset the game we'd just need to create a new instance of this
     class."""
@@ -47,7 +47,7 @@ class Game(object):
         self.all_sprites_list = pg.sprite.Group()
 
         # Create the boid sprites
-        for i in range(boid_opts.num_boids):
+        for _ in range(boid_opts.num_boids):
             boid = Boid(
                 pos=pg.Vector2(rng.integers(0, screen_opts.winsize, size=2).tolist()),
                 vel=pg.Vector2(

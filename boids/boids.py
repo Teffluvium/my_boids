@@ -9,6 +9,8 @@ MAX_SPEED = 3
 
 
 class Boid(pg.sprite.Sprite):
+    """A single Boid"""
+
     def __init__(
         self,
         pos: pg.Vector2 = pg.Vector2(0, 0),
@@ -22,7 +24,7 @@ class Boid(pg.sprite.Sprite):
         # Call the Sprite initializer
         super().__init__()
 
-        """Validate parameters"""
+        ## Validate parameters
         # Ensure that position and velocity are Vector2 objects
         self.pos = pos if isinstance(pos, pg.Vector2) else pg.Vetor2(pos)
         self.vel = vel if isinstance(vel, pg.Vector2) else pg.Vetor2(vel)
@@ -68,5 +70,5 @@ class Boid(pg.sprite.Sprite):
 
 
 if __name__ == "__main__":
-    """The Main"""
+    # The main
     print("Boids")

@@ -1,3 +1,4 @@
+"""Classes to store configuration settings"""
 import configparser
 import json
 
