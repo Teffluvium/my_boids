@@ -34,15 +34,18 @@ class Game:
         # Create the boid sprites
         for _ in range(boid_opts.num_boids):
             boid = Boid(
-                pos=pg.Vector2(rng.integers(0, screen_opts.winsize, size=2).tolist()),
+                pos=pg.Vector2(
+                    rng.integers(0, screen_opts.winsize, size=2).tolist(),
+                ),
                 vel=pg.Vector2(
-                    rng.uniform(-boid_opts.max_speed, boid_opts.max_speed, 2).tolist()
+                    rng.uniform(-boid_opts.max_speed, boid_opts.max_speed, 2).tolist(),
                 ),
                 color=rng.integers(30, 255, 3).tolist(),
                 size=20,
                 width=20,
                 height=20,
             )
+            boid.speed_limit(boid_opts.max_speed)
 
             self.boid_list.add(boid)
             self.all_sprites_list.add(boid)
@@ -62,7 +65,10 @@ class Game:
                 return True
             if event.type == pg.MOUSEBUTTONDOWN:
                 if self.game_over:
-                    self.__init__()
+                    self.__init__(
+                        screen_opts=self.screen_opts,
+                        boid_opts=self.boid_opts,
+                    )
 
         return False
 
@@ -103,7 +109,6 @@ class Game:
                 self.score += 1
                 print(self.score)
                 # You can do something with "boid" here.
-                mouse_pos = pg.Vector2(pg.mouse.get_pos())
                 # Print debugging info
                 # print(
                 #     "\n".join(
