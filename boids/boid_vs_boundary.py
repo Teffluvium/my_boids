@@ -12,24 +12,21 @@ class BoundaryType(Enum):
     WRAP = auto()
 
 
-def move_boid(
+def boid_vs_boundary(
     boid: Boid,
     boundary_type: BoundaryType,
     window_size: Tuple[int, int],
     margin: int = 30,
     turn_factor: float = 1,
 ) -> None:
-    """Move a boid and keep it within the windows according to the boundary type.
+    """Adjust the boid's position and velocity to keep it within the window.
+    The "type" of adjustment is determined by the boundary_type parameter.
 
     Args:
         boid (Boid): Its a Boid
         boundary_type (BoundaryType): What to do when the boid hits the edge
         window_size (Tuple[int, int]): Window size in pixels
     """
-
-    # Move the boid according to its velocity
-    boid.move()
-
     # Select the boundary type and adjust the boid's position and/or velocity
     if boundary_type == BoundaryType.WRAP:
         wrap_around_screen(
