@@ -50,8 +50,7 @@ class Boid(pg.sprite.Sprite):
 
         # Get a rectangle object that represents the size of the image
         self.rect = self.image.get_rect()
-
-        self.rect.center = self.pos
+        self.rect.center = self.pos.xy
 
     def update(self):
         """Called each frame. Updates the position of the boid."""
@@ -59,7 +58,7 @@ class Boid(pg.sprite.Sprite):
         self.pos += self.vel
 
         # Update the rectangle position
-        self.rect.center = self.pos
+        self.rect.center = self.pos.xy
 
     def speed_limit(self, max_speed: float = MAX_SPEED):
         """Limit the speed of the boid"""
