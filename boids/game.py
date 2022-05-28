@@ -136,8 +136,30 @@ class Game:
             if len(self.boid_list) == 0:
                 self.game_over = True
 
-    def display_game_over_text(self, screen):
-        screen_opts = self.screen_opts
+    def display_score(self, screen: pg.Surface):
+        """Display the score to the screen.
+
+        Args:
+            screen (pg.Surface): Screen on which to draw the text.
+        """
+        winsize = screen.get_size()
+        font = pg.font.SysFont("serif", 25)
+        text = font.render(
+            f"Score: {self.score}",
+            True,
+            pg.Color("white"),
+        )
+        text_rect = text.get_rect()
+        text_rect.topright = (winsize[0] - 10, 10)
+        screen.blit(text, text_rect)
+
+    def display_game_over_text(self, screen: pg.Surface):
+        """Display "Game Over" text to the screen.
+
+        Args:
+            screen (pg.Surface): Screen on which to draw the text.
+        """
+        winsize = screen.get_size()
         # font = pg.font.Font("Serif", 25)
         font = pg.font.SysFont("serif", 25)
         text = font.render(
@@ -145,11 +167,11 @@ class Game:
             True,
             pg.Color("white"),
         )
-        center_x = (screen_opts.winsize[0] // 2) - (text.get_width() // 2)
-        center_y = (screen_opts.winsize[1] // 2) - (text.get_height() // 2)
-        screen.blit(text, [center_x, center_y])
+        text_rect = text.get_rect()
+        text_rect.center = (winsize[0] // 2, winsize[1] // 2)
+        screen.blit(text, text_rect)
 
-    def display_frame(self, screen):
+    def display_frame(self, screen: pg.Surface):
         """Display everything to the screen for the game."""
         screen.fill(pg.Color("black"))
 
@@ -158,5 +180,6 @@ class Game:
 
         if not self.game_over:
             self.all_sprites_list.draw(screen)
+            self.display_score(screen)
 
         pg.display.flip()
