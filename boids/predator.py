@@ -13,7 +13,9 @@ class Predator(pg.sprite.Sprite):
             self.orig_image = pg.Surface((20, 40))
             self.orig_image.fill(pg.Color("blue"))
             pg.draw.ellipse(
-                self.orig_image, pg.Color("white"), [0, 0, *self.orig_image.get_size()]
+                self.orig_image,
+                pg.Color("white"),
+                [0, 0, *self.orig_image.get_size()],
             )
         else:
             # load the image
@@ -60,11 +62,14 @@ def move_to(
     Args:
         curr_pos (pg.Vector2): Current position vector
         desired_pos (pg.Vector2): Desired position vector
-        desired_speed (float, optional): Desired speed toward new position. Defaults to 5.
-        tolerance (float, optional): Minimum distance before calculating the new position. Defaults to 10.
+        desired_speed (float, optional): Desired speed toward new
+            position. Defaults to 5.
+        tolerance (float, optional): Minimum distance before calculating
+            the new position. Defaults to 10.
 
     Returns:
-        new_pos (pg.Vector2): New position vector. None if the object is within the tolerance.
+        new_pos (pg.Vector2): New position vector. None if the object is
+            within the tolerance.
         vel (pg.Vector2): Velocity vector
     """
     new_pos = None
