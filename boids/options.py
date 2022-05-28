@@ -16,7 +16,8 @@ class ScreenOptions:
         # Get screen parameters from config file
         self.winsize = json.loads(config["screen"]["winsize"])
         self.fullscreen = config["screen"].getboolean("fullscreen")
-        self.boundary_type = BoundaryType[config["screen"]["boundary_type"].upper()]
+        bound_type_str = config["screen"]["boundary_type"].upper()
+        self.boundary_type = BoundaryType[bound_type_str]
 
 
 class BoidOptions:

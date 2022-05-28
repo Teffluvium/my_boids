@@ -35,10 +35,18 @@ class Game:
         for _ in range(boid_opts.num_boids):
             boid = Boid(
                 pos=pg.Vector2(
-                    rng.integers(0, screen_opts.winsize, size=2).tolist(),
+                    rng.integers(
+                        0,
+                        screen_opts.winsize,
+                        size=2,
+                    ).tolist(),
                 ),
                 vel=pg.Vector2(
-                    rng.uniform(-boid_opts.max_speed, boid_opts.max_speed, 2).tolist(),
+                    rng.uniform(
+                        -boid_opts.max_speed,
+                        boid_opts.max_speed,
+                        size=2,
+                    ).tolist(),
                 ),
                 color=rng.integers(30, 255, 3).tolist(),
                 size=20,
@@ -102,7 +110,11 @@ class Game:
                 )
 
             # See if the predator boid has collided with anything.
-            boid_hit_list = pg.sprite.spritecollide(self.predator, self.boid_list, True)
+            boid_hit_list = pg.sprite.spritecollide(
+                self.predator,
+                self.boid_list,
+                True,
+            )
 
             # Check the list of collisions.
             for boid in boid_hit_list:
