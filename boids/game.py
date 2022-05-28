@@ -5,7 +5,7 @@ from boids.boid_vs_boundary import boid_vs_boundary
 from boids.boids import Boid
 from boids.flock_rules import flock_rules
 from boids.options import BoidOptions, ScreenOptions
-from boids.player import Player
+from boids.predator import Predator
 
 rng = np.random.default_rng()
 
@@ -48,9 +48,9 @@ class Game:
             self.boid_list.add(boid)
             self.all_sprites_list.add(boid)
 
-        # Create the player
-        self.player = Player()
-        self.all_sprites_list.add(self.player)
+        # Create the predator
+        self.predator = Predator()
+        self.all_sprites_list.add(self.predator)
 
     def process_events(self):
         """Process all of the events. Return a "True" if we need
@@ -96,8 +96,8 @@ class Game:
                     window_size=screen_opts.winsize,
                 )
 
-            # See if the player boid has collided with anything.
-            boid_hit_list = pg.sprite.spritecollide(self.player, self.boid_list, True)
+            # See if the predator boid has collided with anything.
+            boid_hit_list = pg.sprite.spritecollide(self.predator, self.boid_list, True)
 
             # Check the list of collisions.
             for boid in boid_hit_list:
@@ -109,11 +109,10 @@ class Game:
                 # print(
                 #     "\n".join(
                 #         [
-                #             f"{self.player.prev_pos  = }",
-                #             f"{self.player.pos       = }",
-                #             f"{self.player.vel       = }",
-                #             f"{self.player.angle     = :.2f}",
-                #             f"{self.player.angle_tmp = :.2f}",
+                #             f"{self.predator.prev_pos  = }",
+                #             f"{self.predator.pos       = }",
+                #             f"{self.predator.vel       = }",
+                #             f"{self.predator.angle     = :.2f}",
                 #         ]
                 #     )
                 # )

@@ -3,8 +3,8 @@ from typing import Tuple
 import pygame as pg
 
 
-class Player(pg.sprite.Sprite):
-    """This class represents the player."""
+class Predator(pg.sprite.Sprite):
+    """This class represents the predator."""
 
     def __init__(self):
         super().__init__()
@@ -27,11 +27,10 @@ class Player(pg.sprite.Sprite):
         self.pos = pg.Vector2(0, 0)
         self.vel = pg.Vector2(0, 0)
         self.angle = 0
-        self.angle_tmp = 0
         self.prev_pos = self.pos
 
     def update(self):
-        """Update the player location."""
+        """Update the predator location."""
         # Store the old position
         self.prev_pos = self.pos
 
