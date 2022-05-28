@@ -20,8 +20,7 @@ class Game:
         screen_opts: ScreenOptions = ScreenOptions(),
         boid_opts: BoidOptions = BoidOptions(),
     ):
-        """Constructor. Create all our attributes and initialize
-        the game."""
+        """Constructor. Create all our attributes and initialize the game."""
         self.screen_opts = screen_opts
         self.boid_opts = boid_opts
 
