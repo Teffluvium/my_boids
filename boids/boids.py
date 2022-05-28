@@ -41,7 +41,8 @@ class Boid(pg.sprite.Sprite):
         # Create a surface for the boid
         self.image = pg.Surface([width, height])
 
-        # Fill the surface with the the background color and set it to be transparent
+        # Fill the surface with the the background color and set
+        # it to be transparent
         self.image.fill(pg.Color("black"))
         self.image.set_colorkey(pg.Color("black"))
 
