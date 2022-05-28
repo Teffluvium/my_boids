@@ -136,22 +136,25 @@ class Game:
             if len(self.boid_list) == 0:
                 self.game_over = True
 
+    def display_game_over_text(self, screen):
+        screen_opts = self.screen_opts
+        # font = pg.font.Font("Serif", 25)
+        font = pg.font.SysFont("serif", 25)
+        text = font.render(
+            "Game Over, click to restart",
+            True,
+            pg.Color("white"),
+        )
+        center_x = (screen_opts.winsize[0] // 2) - (text.get_width() // 2)
+        center_y = (screen_opts.winsize[1] // 2) - (text.get_height() // 2)
+        screen.blit(text, [center_x, center_y])
+
     def display_frame(self, screen):
         """Display everything to the screen for the game."""
-        screen_opts = self.screen_opts
         screen.fill(pg.Color("black"))
 
         if self.game_over:
-            # font = pg.font.Font("Serif", 25)
-            font = pg.font.SysFont("serif", 25)
-            text = font.render(
-                "Game Over, click to restart",
-                True,
-                pg.Color("white"),
-            )
-            center_x = (screen_opts.winsize[0] // 2) - (text.get_width() // 2)
-            center_y = (screen_opts.winsize[1] // 2) - (text.get_height() // 2)
-            screen.blit(text, [center_x, center_y])
+            self.display_game_over_text(screen)
 
         if not self.game_over:
             self.all_sprites_list.draw(screen)
