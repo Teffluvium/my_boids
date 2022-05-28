@@ -5,23 +5,9 @@ from boids.boid_vs_boundary import boid_vs_boundary
 from boids.boids import Boid
 from boids.flock_rules import flock_rules
 from boids.options import BoidOptions, ScreenOptions
+from boids.player import Player
 
 rng = np.random.default_rng()
-
-
-class Player(pg.sprite.Sprite):
-    """This class represents the player."""
-
-    def __init__(self):
-        super().__init__()
-        self.image = pg.Surface([20, 20])
-        self.image.fill(pg.Color("red"))
-        self.rect = self.image.get_rect()
-
-    def update(self):
-        """Update the player location."""
-        pos = pg.mouse.get_pos()
-        self.rect.center = pos
 
 
 class Game:
@@ -118,6 +104,19 @@ class Game:
                 self.score += 1
                 print(self.score)
                 # You can do something with "boid" here.
+                mouse_pos = pg.Vector2(pg.mouse.get_pos())
+                # Print debugging info
+                # print(
+                #     "\n".join(
+                #         [
+                #             f"{self.player.prev_pos  = }",
+                #             f"{self.player.pos       = }",
+                #             f"{self.player.vel       = }",
+                #             f"{self.player.angle     = :.2f}",
+                #             f"{self.player.angle_tmp = :.2f}",
+                #         ]
+                #     )
+                # )
 
             if len(self.boid_list) == 0:
                 self.game_over = True

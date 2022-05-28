@@ -23,7 +23,7 @@ def main():
         screen = pg.display.set_mode(screen_opts.winsize)
 
     pg.display.set_caption("My Boids")
-    pg.mouse.set_visible(False)
+    pg.mouse.set_visible(True)
 
     # Create our objects and set the data
     done = False
@@ -45,7 +45,7 @@ def main():
         game.display_frame(screen)
 
         # Pause for the next frame
-        clock.tick(60)
+        clock.tick(50)
 
     # Close window and exit
     pg.quit()
