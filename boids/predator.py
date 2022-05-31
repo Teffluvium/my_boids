@@ -54,7 +54,7 @@ class Predator(pg.sprite.Sprite):
 def move_to(
     curr_pos: pg.Vector2,
     desired_pos: pg.Vector2,
-    desired_speed: float = 5,
+    desired_speed: float = 10,
     tolerance: float = 10,
 ) -> Tuple[pg.Vector2 | None, pg.Vector2]:
     """Move the object toward the desired position.

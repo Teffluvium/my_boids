@@ -3,7 +3,7 @@ import pygame as pg
 
 from boids.boid_vs_boundary import boid_vs_boundary
 from boids.boids import Boid
-from boids.flock_rules import flock_rules
+from boids.flock_rules import avoid_other_boids, flock_rules
 from boids.options import BoidOptions, ScreenOptions
 from boids.predator import Predator
 
@@ -93,6 +93,7 @@ class Game:
 
             # Apply movement rules to all boids
             for boid in self.boid_list:
+                # Apply movement rules for boids relative to the flock
                 flock_rules(
                     boid,
                     self.boid_list,
@@ -102,6 +103,18 @@ class Game:
                     alignment_factor=boid_opts.alignment_factor,
                     visual_range=boid_opts.visual_range,
                 )
+
+                # Apply movement rules for boids relative to the predator
+                flock_rules(
+                    boid,
+                    [self.predator],
+                    cohesion_factor=boid_opts.cohesion_factor * -2,
+                    separation=boid_opts.separation * 2,
+                    avoid_factor=boid_opts.avoid_factor * 1.2,
+                    alignment_factor=boid_opts.alignment_factor * -1.5,
+                    visual_range=boid_opts.visual_range * 10,
+                )
+
                 boid.speed_limit(boid_opts.max_speed)
                 boid_vs_boundary(
                     boid,
