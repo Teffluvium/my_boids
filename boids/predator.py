@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Union
 
 import pygame as pg
 
@@ -6,7 +6,11 @@ import pygame as pg
 class Predator(pg.sprite.Sprite):
     """This class represents the predator."""
 
-    def __init__(self):
+    def __init__(
+        self,
+        pos: pg.Vector2 = pg.Vector2(0, 0),
+        vel: pg.Vector2 = pg.Vector2(0, 0),
+    ):
         super().__init__()
         use_ellipse = False
         if use_ellipse:
@@ -26,8 +30,8 @@ class Predator(pg.sprite.Sprite):
 
         self.image = self.orig_image
         self.rect = self.image.get_rect()
-        self.pos = pg.Vector2(0, 0)
-        self.vel = pg.Vector2(0, 0)
+        self.pos = pos
+        self.vel = vel
         self.angle = 0
         self.prev_pos = self.pos
 
@@ -56,7 +60,7 @@ def move_to(
     desired_pos: pg.Vector2,
     desired_speed: float = 10,
     tolerance: float = 10,
-) -> Tuple[pg.Vector2 | None, pg.Vector2]:
+) -> Tuple[Union[pg.Vector2, None], pg.Vector2]:
     """Move the object toward the desired position.
 
     Args:
@@ -85,4 +89,4 @@ def move_to(
         # Only update new position if distance is greater zero
         new_pos = curr_pos + velocity
 
-    return new_pos, velocity
+    return new_pos, velocity  # type: ignore

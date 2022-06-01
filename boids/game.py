@@ -59,7 +59,10 @@ class Game:
             self.all_sprites_list.add(boid)
 
         # Create the predator
-        self.predator = Predator()
+        self.predator = Predator(
+            pos=pg.Vector2(screen_opts.winsize) / 2,
+            vel=pg.Vector2(0, 0),
+        )
         self.all_sprites_list.add(self.predator)
 
     def process_events(self):
