@@ -17,12 +17,12 @@ class Game:
 
     def __init__(
         self,
-        screen_opts: ScreenOptions = ScreenOptions(),
-        boid_opts: BoidOptions = BoidOptions(),
+        screen_opts: ScreenOptions | None = None,
+        boid_opts: BoidOptions | None = None,
     ):
         """Constructor. Create all our attributes and initialize the game."""
-        self.screen_opts = screen_opts
-        self.boid_opts = boid_opts
+        self.screen_opts = screen_opts if screen_opts else ScreenOptions.from_config()
+        self.boid_opts = boid_opts if boid_opts else BoidOptions.from_config()
 
         self.score = 0
         self.game_over = False
@@ -113,70 +113,79 @@ class Game:
         This method is run each time through the frame. It
         updates positions and checks for collisions.
         """
-        screen_opts = self.screen_opts
-        boid_opts = self.boid_opts
         if not self.game_over:
-            # Move all the sprites
-            self.all_sprites_list.update()
+            self._update_sprites()
+            self._apply_all_boid_rules()
+            self._handle_predator_collisions()
+            self._check_game_over()
 
-            # Apply movement rules to all boids
-            for boid in self.boid_list:
-                # Apply movement rules for boids relative to the flock
-                flock_rules(
-                    boid,
-                    list(self.boid_list),
-                    cohesion_factor=boid_opts.cohesion_factor,
-                    separation=boid_opts.separation,
-                    avoid_factor=boid_opts.avoid_factor,
-                    alignment_factor=boid_opts.alignment_factor,
-                    visual_range=float(boid_opts.visual_range),
-                )
+    def _update_sprites(self) -> None:
+        """Update positions of all sprites."""
+        self.all_sprites_list.update()
 
-                # Apply movement rules for boids relative to the predator
-                # Note: Predator is treated as a boid for avoidance purposes
-                flock_rules(
-                    boid,
-                    [boid for boid in [self.predator] if isinstance(boid, Boid)],  # type: ignore[misc]
-                    cohesion_factor=boid_opts.cohesion_factor * -2,
-                    separation=boid_opts.separation * 2,
-                    avoid_factor=boid_opts.avoid_factor * 1.2,
-                    alignment_factor=boid_opts.alignment_factor * -1.5,
-                    visual_range=float(boid_opts.visual_range) * 10,
-                )
+    def _apply_boid_movement_rules(self, boid: Boid) -> None:
+        """Apply all movement rules to a single boid.
 
-                boid.speed_limit(boid_opts.max_speed)
-                boid_vs_boundary(
-                    boid,
-                    boundary_type=screen_opts.boundary_type,
-                    window_size=(screen_opts.winsize[0], screen_opts.winsize[1]),
-                )
+        Args:
+            boid (Boid): The boid to apply rules to.
+        """
+        boid_opts = self.boid_opts
+        screen_opts = self.screen_opts
 
-            # See if the predator boid has collided with anything.
-            boid_hit_list = pg.sprite.spritecollide(
-                self.predator,
-                self.boid_list,
-                True,
-            )
+        # Apply movement rules for boids relative to the flock
+        flock_rules(
+            boid,
+            list(self.boid_list),
+            cohesion_factor=boid_opts.cohesion_factor,
+            separation=boid_opts.separation,
+            avoid_factor=boid_opts.avoid_factor,
+            alignment_factor=boid_opts.alignment_factor,
+            visual_range=float(boid_opts.visual_range),
+        )
 
-            # Check the list of collisions.
-            for _boid in boid_hit_list:
-                self.score += 1
-                print(self.score)
-                # You can do something with "boid" here.
-                # Print debugging info
-                # print(
-                #     "\n".join(
-                #         [
-                #             f"{self.predator.prev_pos  = }",
-                #             f"{self.predator.pos       = }",
-                #             f"{self.predator.vel       = }",
-                #             f"{self.predator.angle     = :.2f}",
-                #         ]
-                #     )
-                # )
+        # Apply movement rules for boids relative to the predator
+        # Note: Predator is treated as a boid for avoidance purposes
+        flock_rules(
+            boid,
+            [boid for boid in [self.predator] if isinstance(boid, Boid)],  # type: ignore[misc]
+            cohesion_factor=boid_opts.cohesion_factor * -2,
+            separation=boid_opts.separation * 2,
+            avoid_factor=boid_opts.avoid_factor * 1.2,
+            alignment_factor=boid_opts.alignment_factor * -1.5,
+            visual_range=float(boid_opts.visual_range) * 10,
+        )
 
-            if len(self.boid_list) == 0:
-                self.game_over = True
+        # Apply speed limit and boundary constraints
+        boid.speed_limit(boid_opts.max_speed)
+        boid_vs_boundary(
+            boid,
+            boundary_type=screen_opts.boundary_type,
+            window_size=(screen_opts.winsize[0], screen_opts.winsize[1]),
+        )
+
+    def _apply_all_boid_rules(self) -> None:
+        """Apply movement rules to all boids in the flock."""
+        for boid in self.boid_list:
+            self._apply_boid_movement_rules(boid)
+
+    def _handle_predator_collisions(self) -> None:
+        """Check for and handle collisions between the predator and boids."""
+        # See if the predator has collided with any boids
+        boid_hit_list = pg.sprite.spritecollide(
+            self.predator,
+            self.boid_list,
+            True,  # Remove boids on collision
+        )
+
+        # Update score for each collision
+        for _boid in boid_hit_list:
+            self.score += 1
+            print(self.score)
+
+    def _check_game_over(self) -> None:
+        """Check if the game should end (all boids eaten)."""
+        if len(self.boid_list) == 0:
+            self.game_over = True
 
     def display_score(self, screen: pg.Surface):
         """Display the score to the screen.

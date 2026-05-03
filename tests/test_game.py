@@ -5,41 +5,34 @@ import pytest
 
 from my_boids.boid_vs_boundary import BoundaryType
 from my_boids.game import Game
+from my_boids.options import BoidOptions, ScreenOptions
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
 # ---------------------------------------------------------------------------
 
 
-class _MockScreenOptions:
-    """Minimal ScreenOptions substitute for testing."""
-
-    def __init__(self):
-        self.winsize = [800, 600]
-        self.fullscreen = False
-        self.boundary_type = BoundaryType.BOUNCE
-
-
-class _MockBoidOptions:
-    """Minimal BoidOptions substitute for testing."""
-
-    def __init__(self):
-        self.num_boids = 3
-        self.size = 10
-        self.max_speed = 5.0
-        self.cohesion_factor = 0.005
-        self.separation = 20
-        self.avoid_factor = 0.05
-        self.alignment_factor = 0.01
-        self.visual_range = 100
-
-
 @pytest.fixture(name="game")
 def fixture_game(pygame_display):
-    """Return a fresh Game instance backed by mock options."""
+    """Return a fresh Game instance backed by test options."""
+    screen_opts = ScreenOptions(
+        winsize=[800, 600],
+        fullscreen=False,
+        boundary_type=BoundaryType.BOUNCE,
+    )
+    boid_opts = BoidOptions(
+        num_boids=3,
+        size=10,
+        max_speed=5.0,
+        cohesion_factor=0.005,
+        separation=20,
+        avoid_factor=0.05,
+        alignment_factor=0.01,
+        visual_range=100,
+    )
     return Game(
-        screen_opts=_MockScreenOptions(),
-        boid_opts=_MockBoidOptions(),
+        screen_opts=screen_opts,
+        boid_opts=boid_opts,
     )
 
 

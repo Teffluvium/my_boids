@@ -2,31 +2,63 @@
 
 import configparser
 import json
+from dataclasses import dataclass
+from functools import lru_cache
 
 from my_boids.boid_vs_boundary import BoundaryType
 
 
+@lru_cache(maxsize=1)
+def load_config(config_path: str = "config.ini") -> configparser.ConfigParser:
+    """Load and cache the configuration file.
+
+    This function is cached to ensure the config file is only parsed once.
+
+    Args:
+        config_path (str): Path to the configuration file. Defaults to "config.ini".
+
+    Returns:
+        configparser.ConfigParser: Parsed configuration object.
+    """
+    config = configparser.ConfigParser()
+    config.read(config_path)
+    return config
+
+
+@dataclass
 class ScreenOptions:
-    """Options for the simulation"""
+    """Options for the simulation screen"""
 
     winsize: list[int]
     fullscreen: bool
     boundary_type: BoundaryType
 
-    def __init__(self):
-        # Load parameters from config file
-        config = configparser.ConfigParser()
-        config.read("config.ini")
+    @classmethod
+    def from_config(cls, config_path: str = "config.ini") -> "ScreenOptions":
+        """Create ScreenOptions from a configuration file.
 
-        # Get screen parameters from config file
-        self.winsize = json.loads(config["screen"]["winsize"])
-        fullscreen_value = config["screen"].getboolean("fullscreen")
-        assert fullscreen_value is not None
-        self.fullscreen = fullscreen_value
-        bound_type_str = config["screen"]["boundary_type"].upper()
-        self.boundary_type = BoundaryType[bound_type_str]
+        Args:
+            config_path (str): Path to the configuration file. Defaults to "config.ini".
+
+        Returns:
+            ScreenOptions: Screen options loaded from the config file.
+        """
+        config = load_config(config_path)
+
+        winsize = json.loads(config["screen"]["winsize"])
+        fullscreen = config["screen"].getboolean("fullscreen")
+        assert fullscreen is not None, "fullscreen config value cannot be None"
+        boundary_type_str = config["screen"]["boundary_type"].upper()
+        boundary_type = BoundaryType[boundary_type_str]
+
+        return cls(
+            winsize=winsize,
+            fullscreen=fullscreen,
+            boundary_type=boundary_type,
+        )
 
 
+@dataclass
 class BoidOptions:
     """Options for the Boids"""
 
@@ -39,12 +71,18 @@ class BoidOptions:
     alignment_factor: float
     visual_range: int
 
-    def __init__(self):
-        # Load parameters from config file
-        config = configparser.ConfigParser()
-        config.read("config.ini")
+    @classmethod
+    def from_config(cls, config_path: str = "config.ini") -> "BoidOptions":
+        """Create BoidOptions from a configuration file.
 
-        # Get Boid parameters from config file
+        Args:
+            config_path (str): Path to the configuration file. Defaults to "config.ini".
+
+        Returns:
+            BoidOptions: Boid options loaded from the config file.
+        """
+        config = load_config(config_path)
+
         num_boids = config["boids"].getint("num_boids")
         size = config["boids"].getint("size")
         max_speed = config["boids"].getfloat("max_speed")
@@ -54,21 +92,23 @@ class BoidOptions:
         alignment_factor = config["boids"].getfloat("alignment_factor")
         visual_range = config["boids"].getint("visual_range")
 
-        # Assert values are not None and assign
-        assert num_boids is not None
-        assert size is not None
-        assert max_speed is not None
-        assert cohesion_factor is not None
-        assert separation is not None
-        assert avoid_factor is not None
-        assert alignment_factor is not None
-        assert visual_range is not None
+        # Validate that all values were successfully parsed
+        assert num_boids is not None, "num_boids config value cannot be None"
+        assert size is not None, "size config value cannot be None"
+        assert max_speed is not None, "max_speed config value cannot be None"
+        assert cohesion_factor is not None, "cohesion_factor config value cannot be None"
+        assert separation is not None, "separation config value cannot be None"
+        assert avoid_factor is not None, "avoid_factor config value cannot be None"
+        assert alignment_factor is not None, "alignment_factor config value cannot be None"
+        assert visual_range is not None, "visual_range config value cannot be None"
 
-        self.num_boids = num_boids
-        self.size = size
-        self.max_speed = max_speed
-        self.cohesion_factor = cohesion_factor
-        self.separation = separation
-        self.avoid_factor = avoid_factor
-        self.alignment_factor = alignment_factor
-        self.visual_range = visual_range
+        return cls(
+            num_boids=num_boids,
+            size=size,
+            max_speed=max_speed,
+            cohesion_factor=cohesion_factor,
+            separation=separation,
+            avoid_factor=avoid_factor,
+            alignment_factor=alignment_factor,
+            visual_range=visual_range,
+        )
