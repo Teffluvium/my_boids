@@ -53,7 +53,7 @@ class BoidOptions:
         avoid_factor = config["boids"].getfloat("avoid_factor")
         alignment_factor = config["boids"].getfloat("alignment_factor")
         visual_range = config["boids"].getint("visual_range")
-        
+
         # Assert values are not None and assign
         assert num_boids is not None
         assert size is not None
@@ -63,7 +63,7 @@ class BoidOptions:
         assert avoid_factor is not None
         assert alignment_factor is not None
         assert visual_range is not None
-        
+
         self.num_boids = num_boids
         self.size = size
         self.max_speed = max_speed

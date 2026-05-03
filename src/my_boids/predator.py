@@ -1,4 +1,6 @@
 
+from pathlib import Path
+
 import pygame as pg
 
 
@@ -11,21 +13,21 @@ class Predator(pg.sprite.Sprite):
         vel: pg.Vector2 = pg.Vector2(0, 0),
     ):
         super().__init__()
-        use_ellipse = False
-        if use_ellipse:
-            self.orig_image = pg.Surface((20, 40))
-            self.orig_image.fill(pg.Color("blue"))
-            pg.draw.ellipse(
-                self.orig_image,
-                pg.Color("white"),
-                [0, 0, *self.orig_image.get_size()],
-            )
+
+        # Try to load the predator image, fall back to ellipse if not found
+        image_path = Path(__file__).parent / "assets" / "bird_diamond.png"
+        if image_path.exists():
+            try:
+                self.orig_image = pg.image.load(str(image_path)).convert()
+                self.orig_image = pg.transform.scale(self.orig_image, (20, 40))
+                self.orig_image = pg.transform.rotate(self.orig_image, 90)
+                self.orig_image.set_colorkey(pg.Color("white"))
+            except pg.error:
+                # If image loading fails, use ellipse
+                self.orig_image = self._create_ellipse_image()
         else:
-            # load the image
-            self.orig_image = pg.image.load("bird_diamond.png").convert()
-            self.orig_image = pg.transform.scale(self.orig_image, (20, 40))
-            self.orig_image = pg.transform.rotate(self.orig_image, 90)
-            self.orig_image.set_colorkey(pg.Color("white"))
+            # If image doesn't exist, use ellipse
+            self.orig_image = self._create_ellipse_image()
 
         self.image = self.orig_image
         self.rect = self.image.get_rect()
@@ -33,6 +35,22 @@ class Predator(pg.sprite.Sprite):
         self.vel = vel
         self.angle: float = 0.0
         self.prev_pos = self.pos
+
+    def _create_ellipse_image(self) -> pg.Surface:
+        """Create a simple ellipse surface for the predator.
+
+        Returns:
+            pg.Surface: A surface with an ellipse drawn on it.
+        """
+        surface = pg.Surface((20, 40))
+        surface.fill(pg.Color("black"))
+        surface.set_colorkey(pg.Color("black"))
+        pg.draw.ellipse(
+            surface,
+            pg.Color("white"),
+            [0, 0, *surface.get_size()],
+        )
+        return surface
 
     def update(self):
         """Update the predator location."""

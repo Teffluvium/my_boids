@@ -31,73 +31,70 @@ class Game:
         self.boid_list: pg.sprite.Group[Boid] = pg.sprite.Group()
         self.all_sprites_list: pg.sprite.Group = pg.sprite.Group()
 
+        # Initialize sprites
+        self._initialize_sprites()
+
+    def _create_boid(self) -> Boid:
+        """Create a single boid with random position, velocity, and color.
+
+        Returns:
+            Boid: A newly created boid with random attributes.
+        """
+        screen_opts = self.screen_opts
+        boid_opts = self.boid_opts
+
+        # Generate random position and velocity
+        pos_array = rng.integers(0, screen_opts.winsize, size=2)
+        vel_array = rng.uniform(-boid_opts.max_speed, boid_opts.max_speed, size=2)
+        color_array = rng.integers(30, 255, 3)
+
+        boid = Boid(
+            pos=pg.Vector2(float(pos_array[0]), float(pos_array[1])),
+            vel=pg.Vector2(float(vel_array[0]), float(vel_array[1])),
+            color=pg.Color(int(color_array[0]), int(color_array[1]), int(color_array[2])),
+            size=20,
+            width=20,
+            height=20,
+        )
+        boid.speed_limit(boid_opts.max_speed)
+        return boid
+
+    def _create_predator(self) -> Predator:
+        """Create a predator at the center of the screen.
+
+        Returns:
+            Predator: A newly created predator.
+        """
+        screen_opts = self.screen_opts
+        return Predator(
+            pos=pg.Vector2(float(screen_opts.winsize[0]) / 2, float(screen_opts.winsize[1]) / 2),
+            vel=pg.Vector2(0, 0),
+        )
+
+    def _initialize_sprites(self) -> None:
+        """Initialize all sprites (boids and predator) for the game."""
         # Create the boid sprites
-        for _ in range(boid_opts.num_boids):
-            # Generate random position and velocity
-            pos_array = rng.integers(0, screen_opts.winsize, size=2)
-            vel_array = rng.uniform(-boid_opts.max_speed, boid_opts.max_speed, size=2)
-            color_array = rng.integers(30, 255, 3)
-
-            boid = Boid(
-                pos=pg.Vector2(float(pos_array[0]), float(pos_array[1])),
-                vel=pg.Vector2(float(vel_array[0]), float(vel_array[1])),
-                color=pg.Color(int(color_array[0]), int(color_array[1]), int(color_array[2])),
-                size=20,
-                width=20,
-                height=20,
-            )
-            boid.speed_limit(boid_opts.max_speed)
-
+        for _ in range(self.boid_opts.num_boids):
+            boid = self._create_boid()
             self.boid_list.add(boid)
             self.all_sprites_list.add(boid)
 
         # Create the predator
-        self.predator = Predator(
-            pos=pg.Vector2(float(screen_opts.winsize[0]) / 2, float(screen_opts.winsize[1]) / 2),
-            vel=pg.Vector2(0, 0),
-        )
+        self.predator = self._create_predator()
         self.all_sprites_list.add(self.predator)
 
     def reset(self) -> None:
         """Reset the game to initial state."""
-        # Store options
-        screen_opts = self.screen_opts
-        boid_opts = self.boid_opts
-        
         # Reset game state
         self.score = 0
         self.game_over = False
-        
+
         # Clear sprite lists
         self.boid_list.empty()
         self.all_sprites_list.empty()
-        
-        # Create new boids
-        for _ in range(boid_opts.num_boids):
-            # Generate random position and velocity
-            pos_array = rng.integers(0, screen_opts.winsize, size=2)
-            vel_array = rng.uniform(-boid_opts.max_speed, boid_opts.max_speed, size=2)
-            color_array = rng.integers(30, 255, 3)
 
-            boid = Boid(
-                pos=pg.Vector2(float(pos_array[0]), float(pos_array[1])),
-                vel=pg.Vector2(float(vel_array[0]), float(vel_array[1])),
-                color=pg.Color(int(color_array[0]), int(color_array[1]), int(color_array[2])),
-                size=20,
-                width=20,
-                height=20,
-            )
-            boid.speed_limit(boid_opts.max_speed)
-
-            self.boid_list.add(boid)
-            self.all_sprites_list.add(boid)
-
-        # Create new predator
-        self.predator = Predator(
-            pos=pg.Vector2(float(screen_opts.winsize[0]) / 2, float(screen_opts.winsize[1]) / 2),
-            vel=pg.Vector2(0, 0),
-        )
-        self.all_sprites_list.add(self.predator)
+        # Reinitialize sprites
+        self._initialize_sprites()
 
     def process_events(self) -> bool:
         """Process all of the events. Return a "True" if we need
