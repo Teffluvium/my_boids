@@ -36,6 +36,9 @@ def main():
 
     # Main game loop
     while not done:
+        # Start performance monitoring for this frame
+        game.performance.start_frame()
+
         # Process events (keystrokes, mouse clicks, etc)
         done = game.process_events()
 

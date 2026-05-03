@@ -5,6 +5,7 @@ from my_boids.boid_vs_boundary import boid_vs_boundary
 from my_boids.boids import Boid
 from my_boids.flock_rules import flock_rules
 from my_boids.options import BoidOptions, ScreenOptions
+from my_boids.performance import PerformanceMonitor
 from my_boids.predator import Predator
 from my_boids.spatial_grid import SpatialGrid
 
@@ -20,7 +21,9 @@ class Game:
         self,
         screen_opts: ScreenOptions | None = None,
         boid_opts: BoidOptions | None = None,
-        use_spatial_grid: bool = True,
+        use_spatial_grid: bool = False,
+        show_metrics: bool = True,
+        enable_profiling: bool = True,
     ):
         """Constructor. Create all our attributes and initialize the game.
 
@@ -28,11 +31,17 @@ class Game:
             screen_opts (ScreenOptions | None): Screen configuration options.
             boid_opts (BoidOptions | None): Boid behavior configuration options.
             use_spatial_grid (bool): Whether to use spatial partitioning for
-                performance optimization. Defaults to True.
+                performance optimization. Defaults to False because at typical
+                scales (<300 boids), the overhead outweighs the benefits.
+            show_metrics (bool): Whether to display performance metrics on screen.
+                Defaults to True.
+            enable_profiling (bool): Whether to enable performance profiling.
+                Defaults to True.
         """
         self.screen_opts = screen_opts if screen_opts else ScreenOptions.from_config()
         self.boid_opts = boid_opts if boid_opts else BoidOptions.from_config()
         self.use_spatial_grid = use_spatial_grid
+        self.show_metrics = show_metrics
 
         self.score = 0
         self.game_over = False
@@ -48,6 +57,9 @@ class Game:
             self.spatial_grid = SpatialGrid(cell_size=float(self.boid_opts.visual_range))
         else:
             self.spatial_grid = None
+
+        # Create performance monitor
+        self.performance = PerformanceMonitor(enabled=enable_profiling)
 
         # Initialize sprites
         self._initialize_sprites()
@@ -132,9 +144,18 @@ class Game:
         updates positions and checks for collisions.
         """
         if not self.game_over:
+            self.performance.start_operation()
             self._update_sprites()
+            self.performance.end_operation("update")
+
+            self.performance.start_operation()
             self._apply_all_boid_rules()
+            self.performance.end_operation("logic")
+
+            self.performance.start_operation()
             self._handle_predator_collisions()
+            self.performance.end_operation("collision")
+
             self._check_game_over()
 
     def _update_sprites(self) -> None:
@@ -272,8 +293,52 @@ class Game:
         text_rect.center = (winsize[0] // 2, winsize[1] // 2)
         screen.blit(text, text_rect)
 
+    def display_metrics(self, screen: pg.Surface):
+        """Display performance metrics on the screen.
+
+        Args:
+            screen (pg.Surface): Screen on which to draw the metrics.
+        """
+        font = pg.font.SysFont("monospace", 14)
+        y_offset = 10
+
+        # Get performance data
+        fps = self.performance.get_fps()
+        avg_frame_time = self.performance.get_avg_frame_time()
+
+        # Create metrics lines
+        metrics = [
+            f"FPS: {fps:.1f}",
+            f"Frame: {avg_frame_time:.2f}ms",
+            f"Boids: {len(self.boid_list)}",
+        ]
+
+        # Add spatial grid stats if enabled
+        if self.use_spatial_grid and self.spatial_grid:
+            cell_count = self.spatial_grid.get_cell_count()
+            metrics.append(f"Grid: {cell_count} cells")
+            metrics.append("Mode: Spatial")
+        else:
+            metrics.append("Mode: Brute Force")
+
+        # Add timing breakdown if available
+        if self.performance.current_metrics:
+            m = self.performance.current_metrics
+            metrics.append(f"Update: {m.update_time*1000:.2f}ms")
+            metrics.append(f"Logic: {m.logic_time*1000:.2f}ms")
+            metrics.append(f"Collision: {m.collision_time*1000:.2f}ms")
+            metrics.append(f"Render: {m.render_time*1000:.2f}ms")
+
+        # Render each line
+        for line in metrics:
+            text = font.render(line, True, pg.Color("green"))
+            screen.blit(text, (10, y_offset))
+            y_offset += 18
+
     def display_frame(self, screen: pg.Surface):
         """Display everything to the screen for the game."""
+        self.performance.start_operation()
+
         screen.fill(pg.Color("black"))
 
         if self.game_over:
@@ -283,4 +348,10 @@ class Game:
             self.all_sprites_list.draw(screen)
             self.display_score(screen)
 
+            # Display performance metrics if enabled
+            if self.show_metrics:
+                self.display_metrics(screen)
+
         pg.display.flip()
+        self.performance.end_operation("render")
+        self.performance.end_frame()
