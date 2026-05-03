@@ -6,6 +6,7 @@ from my_boids.boids import Boid
 from my_boids.flock_rules import flock_rules
 from my_boids.options import BoidOptions, ScreenOptions
 from my_boids.predator import Predator
+from my_boids.spatial_grid import SpatialGrid
 
 rng = np.random.default_rng()
 
@@ -19,10 +20,19 @@ class Game:
         self,
         screen_opts: ScreenOptions | None = None,
         boid_opts: BoidOptions | None = None,
+        use_spatial_grid: bool = True,
     ):
-        """Constructor. Create all our attributes and initialize the game."""
+        """Constructor. Create all our attributes and initialize the game.
+
+        Args:
+            screen_opts (ScreenOptions | None): Screen configuration options.
+            boid_opts (BoidOptions | None): Boid behavior configuration options.
+            use_spatial_grid (bool): Whether to use spatial partitioning for
+                performance optimization. Defaults to True.
+        """
         self.screen_opts = screen_opts if screen_opts else ScreenOptions.from_config()
         self.boid_opts = boid_opts if boid_opts else BoidOptions.from_config()
+        self.use_spatial_grid = use_spatial_grid
 
         self.score = 0
         self.game_over = False
@@ -30,6 +40,14 @@ class Game:
         # Create sprite lists
         self.boid_list: pg.sprite.Group[Boid] = pg.sprite.Group()
         self.all_sprites_list: pg.sprite.Group = pg.sprite.Group()
+
+        # Create spatial grid for performance optimization
+        # Cell size is set to visual range for optimal performance
+        self.spatial_grid: SpatialGrid | None
+        if self.use_spatial_grid:
+            self.spatial_grid = SpatialGrid(cell_size=float(self.boid_opts.visual_range))
+        else:
+            self.spatial_grid = None
 
         # Initialize sprites
         self._initialize_sprites()
@@ -132,10 +150,21 @@ class Game:
         boid_opts = self.boid_opts
         screen_opts = self.screen_opts
 
+        # Get nearby boids based on visual range
+        if self.use_spatial_grid and self.spatial_grid:
+            # Use spatial grid for efficient neighbor finding
+            nearby_boids = self.spatial_grid.get_nearby_boids(
+                boid.pos,
+                search_radius=float(boid_opts.visual_range),
+            )
+        else:
+            # Fall back to checking all boids
+            nearby_boids = list(self.boid_list)
+
         # Apply movement rules for boids relative to the flock
         flock_rules(
             boid,
-            list(self.boid_list),
+            nearby_boids,
             cohesion_factor=boid_opts.cohesion_factor,
             separation=boid_opts.separation,
             avoid_factor=boid_opts.avoid_factor,
@@ -145,14 +174,28 @@ class Game:
 
         # Apply movement rules for boids relative to the predator
         # Note: Predator is treated as a boid for avoidance purposes
+        # Use larger search radius for predator avoidance
+        predator_search_radius = float(boid_opts.visual_range) * 10
+        if self.use_spatial_grid and self.spatial_grid:
+            nearby_predators = self.spatial_grid.get_nearby_boids(
+                boid.pos,
+                search_radius=predator_search_radius,
+            )
+            # Filter to only include the predator (if it's a Boid subclass)
+            nearby_predators = [
+                b for b in nearby_predators if isinstance(b, Boid) and b is self.predator
+            ]  # type: ignore[misc]
+        else:
+            nearby_predators = [boid for boid in [self.predator] if isinstance(boid, Boid)]  # type: ignore[misc]
+
         flock_rules(
             boid,
-            [boid for boid in [self.predator] if isinstance(boid, Boid)],  # type: ignore[misc]
+            nearby_predators,
             cohesion_factor=boid_opts.cohesion_factor * -2,
             separation=boid_opts.separation * 2,
             avoid_factor=boid_opts.avoid_factor * 1.2,
             alignment_factor=boid_opts.alignment_factor * -1.5,
-            visual_range=float(boid_opts.visual_range) * 10,
+            visual_range=predator_search_radius,
         )
 
         # Apply speed limit and boundary constraints
@@ -165,6 +208,13 @@ class Game:
 
     def _apply_all_boid_rules(self) -> None:
         """Apply movement rules to all boids in the flock."""
+        # Rebuild spatial grid if enabled
+        if self.use_spatial_grid and self.spatial_grid:
+            self.spatial_grid.clear()
+            for boid in self.boid_list:
+                self.spatial_grid.insert(boid)
+
+        # Apply rules to each boid
         for boid in self.boid_list:
             self._apply_boid_movement_rules(boid)
 
