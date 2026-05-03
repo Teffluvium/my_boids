@@ -1,6 +1,24 @@
+import os
+
 import pygame as pg
 import pytest
 from boids.boids import Boid
+
+
+@pytest.fixture(scope="session", name="pygame_display")
+def fixture_pygame_display():
+    """Initialize pygame with a headless dummy display for tests that need it.
+
+    This fixture starts a virtual display using SDL's dummy driver so that
+    operations requiring an active display (e.g. Surface.convert, image.load,
+    font rendering) work in headless CI environments.
+    """
+    os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
+    os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
+    pg.init()
+    screen = pg.display.set_mode((800, 600))
+    yield screen
+    pg.quit()
 
 
 @pytest.fixture(name="boid_with_vector_init")
