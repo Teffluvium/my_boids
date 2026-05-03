@@ -1,6 +1,7 @@
 import pygame as pg
 import pytest
-from boids.flock_rules import avoid_other_boids, cohesion, flock_rules, match_velocity
+
+from my_boids.flock_rules import avoid_other_boids, cohesion, flock_rules, match_velocity
 
 
 @pytest.mark.parametrize(

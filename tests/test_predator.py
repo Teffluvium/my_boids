@@ -1,8 +1,9 @@
 """Tests for boids/predator.py"""
+
 import pygame as pg
 import pytest
-from boids.predator import Predator, move_to
 
+from my_boids.predator import Predator, move_to
 
 # ---------------------------------------------------------------------------
 # move_to (pure logic – no display required)

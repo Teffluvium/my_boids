@@ -1,13 +1,15 @@
 """Test the Boids class"""
+
 import pygame as pg
 import pytest
-from boids.boid_vs_boundary import (
+
+from my_boids.boid_vs_boundary import (
     BoundaryType,
     boid_vs_boundary,
     keep_within_bounds,
     wrap_around_screen,
 )
-from boids.boids import Boid
+from my_boids.boids import Boid
 
 
 @pytest.fixture(name="window_size")

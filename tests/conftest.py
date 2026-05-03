@@ -2,7 +2,8 @@ import os
 
 import pygame as pg
 import pytest
-from boids.boids import Boid
+
+from my_boids.boids import Boid
 
 
 @pytest.fixture(scope="session", name="pygame_display")

@@ -1,0 +1,60 @@
+[project]
+name = "my-boids"
+version = "0.1.0"
+description = "Python implementation of Boids using PyGame for visualization"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["numpy>=2.2.1", "pygame>=2.6.1"]
+
+[project.scripts]
+my-boids = "my_boids.boids_sim:main"
+
+[tool.uv]
+package = true
+
+[dependency-groups]
+dev = ["mypy>=1.14.1", "pytest>=8.3.5", "pytest-cov>=6.0.0", "ruff>=0.8.5"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "__pycache__",
+    "htmlcov",
+    "mypy_report",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "B008",  # function call in argument defaults (false positive for pygame objects)
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+check_untyped_defs = true
+exclude = ["htmlcov", "mypy_report"]

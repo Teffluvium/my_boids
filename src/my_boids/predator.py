@@ -1,4 +1,3 @@
-from typing import Tuple, Union
 
 import pygame as pg
 
@@ -32,7 +31,7 @@ class Predator(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.pos = pos
         self.vel = vel
-        self.angle = 0
+        self.angle: float = 0.0
         self.prev_pos = self.pos
 
     def update(self):
@@ -60,7 +59,7 @@ def move_to(
     desired_pos: pg.Vector2,
     desired_speed: float = 10,
     tolerance: float = 10,
-) -> Tuple[Union[pg.Vector2, None], pg.Vector2]:
+) -> tuple[pg.Vector2 | None, pg.Vector2]:
     """Move the object toward the desired position.
 
     Args:

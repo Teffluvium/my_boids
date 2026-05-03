@@ -1,7 +1,9 @@
 """Test the Boids class"""
+
 import pygame as pg
 import pytest
-from boids.boids import Boid
+
+from my_boids.boids import Boid
 
 
 @pytest.mark.skip(reason="Manual test fails; but VSCode test passes... WTF?")

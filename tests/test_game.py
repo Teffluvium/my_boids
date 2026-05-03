@@ -1,9 +1,10 @@
 """Tests for boids/game.py"""
+
 import pygame as pg
 import pytest
-from boids.boid_vs_boundary import BoundaryType
-from boids.game import Game
 
+from my_boids.boid_vs_boundary import BoundaryType
+from my_boids.game import Game
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
