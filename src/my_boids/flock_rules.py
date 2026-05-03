@@ -1,9 +1,9 @@
 """Define rules for Boid behavior in a flock."""
-from typing import List
+
 
 import pygame as pg
 
-from boids.boids import Boid
+from my_boids.boids import Boid
 
 COHESION_FACTOR = 0.005
 SEPARATION = 20
@@ -14,7 +14,7 @@ VISUAL_RANGE = 100
 
 def cohesion(
     boid: Boid,
-    boids: List[Boid],
+    boids: list[Boid],
     cohesion_factor: float = COHESION_FACTOR,
     visual_range: float = VISUAL_RANGE,
 ):
@@ -43,7 +43,7 @@ def cohesion(
 
 def avoid_other_boids(
     boid: Boid,
-    boids: List[Boid],
+    boids: list[Boid],
     separation: float = SEPARATION,
     avoid_factor: float = AVOID_FACTOR,
 ):
@@ -68,7 +68,7 @@ def avoid_other_boids(
 
 def match_velocity(
     boid: Boid,
-    boids: List[Boid],
+    boids: list[Boid],
     alignment_factor: float = ALIGNMENT_FACTOR,
     visual_range: float = VISUAL_RANGE,
 ):
@@ -97,7 +97,7 @@ def match_velocity(
 
 def flock_rules(
     boid: Boid,
-    boids: List[Boid],
+    boids: list[Boid],
     cohesion_factor: float = COHESION_FACTOR,
     separation: float = SEPARATION,
     avoid_factor: float = AVOID_FACTOR,

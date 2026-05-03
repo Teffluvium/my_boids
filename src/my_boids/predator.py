@@ -1,4 +1,3 @@
-from typing import Tuple, Union
 
 import pygame as pg
 
@@ -60,7 +59,7 @@ def move_to(
     desired_pos: pg.Vector2,
     desired_speed: float = 10,
     tolerance: float = 10,
-) -> Tuple[Union[pg.Vector2, None], pg.Vector2]:
+) -> tuple[pg.Vector2 | None, pg.Vector2]:
     """Move the object toward the desired position.
 
     Args:

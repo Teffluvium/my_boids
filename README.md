@@ -2,43 +2,109 @@
 
 Python implementation of Boids using the PyGame engine for the visualization.
 
-## 1. Installation
+## Requirements
 
-### Virtual Environment
+- Python 3.12 or higher
+- [UV](https://github.com/astral-sh/uv) package manager
 
-Create a Python virtual environment and activate it.
+## Installation
 
+### Install UV
+
+If you don't have UV installed, install it first:
+
+**macOS/Linux:**
 ```bash
-python -m venv .venv
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-#### Activate the virtual environment
-
-Windows virtual environment activation
-
-```bash
-.venv/Scripts/activate
+**Windows:**
+```powershell
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-Mac or Linux virtural environment activation
+### Install Project Dependencies
+
+UV will automatically create a virtual environment and install all dependencies:
 
 ```bash
-source .venv/bin/activate
+uv sync
 ```
 
-#### Install requirements
-
-This simulation requires the numpy and pygame packages.  These can be installed via `pip` andn the `requirements.txt` file.
+Alternatively, you can use the Makefile:
 
 ```bash
-pip install -r requirements.txt
+make install
 ```
 
-## 2. Running the Simulation
+## Running the Simulation
 
-Run the script `boids_sim.py` to see the Boids in action.
+You can run the simulation using any of these methods:
 
-## 3. Simulation Settings
+**Using UV:**
+```bash
+uv run my-boids
+```
+
+**Using the Makefile:**
+```bash
+make run
+```
+
+**Direct script execution (legacy):**
+```bash
+python boids_sim.py
+```
+
+## Development
+
+This project uses UV for dependency management, ruff for linting and formatting, and mypy for type checking.
+
+### Makefile Targets
+
+The project includes a Makefile with common development tasks:
+
+- `make install` - Install dependencies using UV
+- `make format` - Format code using ruff
+- `make lint` - Check code for linting issues
+- `make lint-fix` - Auto-fix linting issues where possible
+- `make type-check` - Run mypy type checking
+- `make test` - Run tests with coverage
+- `make run` - Run the boids simulation
+- `make clean` - Remove generated files and caches
+- `make all` - Run format, lint, type-check, and test in sequence
+- `make help` - Show all available targets
+
+### Manual Commands
+
+If you prefer to run commands directly:
+
+**Format code:**
+```bash
+uv run ruff format .
+```
+
+**Lint code:**
+```bash
+uv run ruff check .
+```
+
+**Fix linting issues:**
+```bash
+uv run ruff check --fix .
+```
+
+**Run type checking:**
+```bash
+uv run mypy src/my_boids tests
+```
+
+**Run tests:**
+```bash
+uv run pytest tests/ --cov=my_boids --cov-report=html --cov-report=term
+```
+
+## Simulation Settings
 
 Adjust the parameters in the `[screen]` section of `config.ini` to change some general game settings:
 
@@ -79,7 +145,7 @@ Adjust the `[boid]` parameters at in the file `config.ini` to modify the boid be
     \
     `visual_range = 50`
 
-## 4. Additional references for Boids
+## Additional References for Boids
 
 - [Background and Update by Conrad Parker](http://www.red3d.com/cwr/boids/)
 - [Conrad Parker psuedocode](http://www.kfish.org/boids/pseudocode.html): Original psuedocode and explanations

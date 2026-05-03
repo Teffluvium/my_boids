@@ -1,7 +1,9 @@
 """Tests for boids/options.py"""
+
 import pytest
-from boids.boid_vs_boundary import BoundaryType
-from boids.options import BoidOptions, ScreenOptions
+
+from my_boids.boid_vs_boundary import BoundaryType
+from my_boids.options import BoidOptions, ScreenOptions
 
 
 def test_screen_options_winsize():

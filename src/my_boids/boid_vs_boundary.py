@@ -1,8 +1,8 @@
 """Movement functions and classes for the boids"""
-from enum import Enum, auto
-from typing import Tuple
 
-from boids.boids import Boid
+from enum import Enum, auto
+
+from my_boids.boids import Boid
 
 
 class BoundaryType(Enum):
@@ -15,7 +15,7 @@ class BoundaryType(Enum):
 def boid_vs_boundary(
     boid: Boid,
     boundary_type: BoundaryType,
-    window_size: Tuple[int, int],
+    window_size: tuple[int, int],
     margin: int = 30,
     turn_factor: float = 1,
 ) -> None:
@@ -42,7 +42,7 @@ def boid_vs_boundary(
         )
 
 
-def wrap_around_screen(boid: Boid, window_size: Tuple[int, int]) -> None:
+def wrap_around_screen(boid: Boid, window_size: tuple[int, int]) -> None:
     """Wrap boid around to opposite side of the window.
 
     Note: This function compares the postion of the boid to the window size
@@ -60,7 +60,7 @@ def wrap_around_screen(boid: Boid, window_size: Tuple[int, int]) -> None:
 
 def keep_within_bounds(
     boid: Boid,
-    window_size: Tuple[int, int],
+    window_size: tuple[int, int],
     margin: int = 30,
     turn_factor: float = 1,
 ) -> None:

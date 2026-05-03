@@ -1,6 +1,7 @@
 """
 Create a boid and define its movement rules
 """
+
 import pygame as pg
 
 # Boid Constants

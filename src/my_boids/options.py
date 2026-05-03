@@ -1,8 +1,9 @@
 """Classes to store configuration settings"""
+
 import configparser
 import json
 
-from boids.boid_vs_boundary import BoundaryType
+from my_boids.boid_vs_boundary import BoundaryType
 
 
 class ScreenOptions:

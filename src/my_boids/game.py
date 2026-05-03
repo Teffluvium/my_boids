@@ -1,11 +1,11 @@
 import numpy as np
 import pygame as pg
 
-from boids.boid_vs_boundary import boid_vs_boundary
-from boids.boids import Boid
-from boids.flock_rules import avoid_other_boids, flock_rules
-from boids.options import BoidOptions, ScreenOptions
-from boids.predator import Predator
+from my_boids.boid_vs_boundary import boid_vs_boundary
+from my_boids.boids import Boid
+from my_boids.flock_rules import flock_rules
+from my_boids.options import BoidOptions, ScreenOptions
+from my_boids.predator import Predator
 
 rng = np.random.default_rng()
 
@@ -70,9 +70,7 @@ class Game:
         to close the window."""
 
         for event in pg.event.get():
-            if event.type == pg.QUIT or (
-                event.type == pg.KEYUP and event.key == pg.K_ESCAPE
-            ):
+            if event.type == pg.QUIT or (event.type == pg.KEYUP and event.key == pg.K_ESCAPE):
                 return True
             if event.type == pg.MOUSEBUTTONDOWN:
                 if self.game_over:
