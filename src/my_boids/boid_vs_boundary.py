@@ -78,7 +78,7 @@ def keep_within_bounds(
             Defaults to 1.
     """
 
-    def adjust_vel(pos, vel, window_size) -> float:
+    def adjust_vel(pos: float, vel: float, window_size: int) -> float:
         """Adjust velocity component to keep boid within bounds"""
         if pos < margin:
             vel += turn_factor

@@ -31,7 +31,7 @@ class Predator(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.pos = pos
         self.vel = vel
-        self.angle = 0
+        self.angle: float = 0.0
         self.prev_pos = self.pos
 
     def update(self):

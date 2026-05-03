@@ -19,7 +19,8 @@ def main():
         screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
         # Update the window size for fullscreen
-        screen_opts.winsize = screen.get_size()
+        screen_size = screen.get_size()
+        screen_opts.winsize = [screen_size[0], screen_size[1]]
     else:
         screen = pg.display.set_mode(screen_opts.winsize)
 
