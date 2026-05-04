@@ -26,7 +26,7 @@ lint-fix: ## Auto-fix linting issues where possible
 	uv run ruff check --fix .
 
 .PHONY: pre-commit
-pre-commit: ## Run pre-commit hooks on all files
+pre-commit: install-hooks ## Run pre-commit hooks on all files
 	uv run --with pre-commit pre-commit run --all-files
 
 .PHONY: type-check
