@@ -32,7 +32,7 @@ jobs:
           git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" >> changelog.txt
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           body_path: changelog.txt
           draft: false
