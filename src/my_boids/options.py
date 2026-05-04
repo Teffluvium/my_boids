@@ -70,6 +70,9 @@ class BoidOptions:
     avoid_factor: float
     alignment_factor: float
     visual_range: int
+    predator_behavior_mode: str
+    predator_detection_range: float
+    predator_reaction_strength: float
 
     @classmethod
     def from_config(cls, config_path: str = "config.ini") -> "BoidOptions":
@@ -91,6 +94,9 @@ class BoidOptions:
         avoid_factor = config["boids"].getfloat("avoid_factor")
         alignment_factor = config["boids"].getfloat("alignment_factor")
         visual_range = config["boids"].getint("visual_range")
+        predator_behavior_mode = config["boids"]["predator_behavior_mode"]
+        predator_detection_range = config["boids"].getfloat("predator_detection_range")
+        predator_reaction_strength = config["boids"].getfloat("predator_reaction_strength")
 
         # Validate that all values were successfully parsed
         assert num_boids is not None, "num_boids config value cannot be None"
@@ -101,6 +107,16 @@ class BoidOptions:
         assert avoid_factor is not None, "avoid_factor config value cannot be None"
         assert alignment_factor is not None, "alignment_factor config value cannot be None"
         assert visual_range is not None, "visual_range config value cannot be None"
+        assert predator_behavior_mode in [
+            "avoid",
+            "attract",
+        ], "predator_behavior_mode must be 'avoid' or 'attract'"
+        assert (
+            predator_detection_range is not None
+        ), "predator_detection_range config value cannot be None"
+        assert (
+            predator_reaction_strength is not None
+        ), "predator_reaction_strength config value cannot be None"
 
         return cls(
             num_boids=num_boids,
@@ -111,4 +127,7 @@ class BoidOptions:
             avoid_factor=avoid_factor,
             alignment_factor=alignment_factor,
             visual_range=visual_range,
+            predator_behavior_mode=predator_behavior_mode,
+            predator_detection_range=predator_detection_range,
+            predator_reaction_strength=predator_reaction_strength,
         )
