@@ -111,12 +111,12 @@ class BoidOptions:
             "avoid",
             "attract",
         ], "predator_behavior_mode must be 'avoid' or 'attract'"
-        assert predator_detection_range is not None, (
-            "predator_detection_range config value cannot be None"
-        )
-        assert predator_reaction_strength is not None, (
-            "predator_reaction_strength config value cannot be None"
-        )
+        assert (
+            predator_detection_range is not None
+        ), "predator_detection_range config value cannot be None"
+        assert (
+            predator_reaction_strength is not None
+        ), "predator_reaction_strength config value cannot be None"
 
         return cls(
             num_boids=num_boids,
