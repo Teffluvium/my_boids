@@ -105,4 +105,4 @@ def move_to(
         # Only update new position if distance is greater zero
         new_pos = curr_pos + velocity
 
-    return new_pos, velocity  # type: ignore
+    return new_pos, velocity

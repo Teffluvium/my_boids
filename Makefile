@@ -9,6 +9,10 @@ help: 	## Show this help message
 install: ## Install dependencies using uv
 	uv sync
 
+.PHONY: install-hooks
+install-hooks: ## Install pre-commit hooks
+	uv run --with pre-commit pre-commit install
+
 .PHONY: format
 format: ## Format code using ruff
 	uv run ruff format .
@@ -20,6 +24,10 @@ lint: 	## Check code for linting issues
 .PHONY: lint-fix
 lint-fix: ## Auto-fix linting issues where possible
 	uv run ruff check --fix .
+
+.PHONY: pre-commit
+pre-commit: ## Run pre-commit hooks on all files
+	uv run --with pre-commit pre-commit run --all-files
 
 .PHONY: type-check
 type-check: ## Run mypy type checking
@@ -40,11 +48,15 @@ clean: ## Remove generated files and caches
 	find . -type f -name "*.pyo" -delete
 	find . -type f -name "*.pyd" -delete
 	rm -rf .pytest_cache
-	rm -rf .ruff_cache
+	rm -rf .ruff_cac
+
+.PHONY: uninstall-hooks
+uninstall-hooks: ## Uninstall pre-commit hooks
+	uv run --with pre-commit pre-commit uninstall
 	rm -rf .mypy_cache
 	rm -rf htmlcov
 	rm -rf mypy_report
 	rm -rf .coverage
 
-all: format lint type-check test
+all: format lint type-check test ## Run all checks (formatting, linting, type checking, and tests)
 	@echo "All checks passed!"
