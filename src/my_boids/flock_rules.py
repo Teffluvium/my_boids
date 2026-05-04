@@ -3,6 +3,7 @@
 import pygame as pg
 
 from my_boids.boids import Boid
+from my_boids.predator import Predator
 
 COHESION_FACTOR = 0.005
 SEPARATION = 20
@@ -107,3 +108,52 @@ def flock_rules(
     cohesion(boid, boids, cohesion_factor, visual_range)
     avoid_other_boids(boid, boids, separation, avoid_factor)
     match_velocity(boid, boids, alignment_factor, visual_range)
+
+
+def react_to_predator(
+    boid: Boid,
+    predator: Predator,
+    behavior_mode: str,
+    detection_range: float,
+    reaction_strength: float,
+):
+    """Make the boid react to the predator by either avoiding or being attracted to it.
+
+    Args:
+        boid: The boid to update
+        predator: The predator to react to
+        behavior_mode: Either "avoid" to flee from predator or "attract" to move toward it
+        detection_range: Maximum distance at which boid can detect the predator
+        reaction_strength: Strength of the reaction force
+    """
+    # Calculate distance from boid to predator
+    distance = boid.pos.distance_to(predator.pos)
+
+    # Return early if predator is beyond detection range
+    if distance > detection_range:
+        return
+
+    # Handle edge case where boid and predator are at same position
+    if distance < 0.1:
+        # Give a small random push to avoid being stuck
+        import random
+
+        angle = random.uniform(0, 2 * 3.14159)
+        direction = pg.Vector2(1, 0).rotate_rad(angle)
+        force_magnitude = reaction_strength
+        boid.vel += direction * force_magnitude
+        return
+
+    # Calculate direction vector
+    if behavior_mode == "avoid":
+        # Direction away from predator
+        direction = (boid.pos - predator.pos).normalize()
+    else:  # attract
+        # Direction toward predator
+        direction = (predator.pos - boid.pos).normalize()
+
+    # Calculate force using inverse square law (stronger when closer)
+    force_magnitude = reaction_strength / (distance + 1) ** 2
+
+    # Apply force to boid velocity
+    boid.vel += direction * force_magnitude

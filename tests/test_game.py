@@ -32,6 +32,9 @@ def fixture_game(pygame_display):
         avoid_factor=0.05,
         alignment_factor=0.01,
         visual_range=100,
+        predator_behavior_mode="avoid",
+        predator_detection_range=400.0,
+        predator_reaction_strength=0.5,
     )
     return Game(
         screen_opts=screen_opts,
@@ -57,6 +60,9 @@ def fixture_game_with_spatial_grid(pygame_display):
         avoid_factor=0.05,
         alignment_factor=0.01,
         visual_range=100,
+        predator_behavior_mode="avoid",
+        predator_detection_range=400.0,
+        predator_reaction_strength=0.5,
     )
     return Game(
         screen_opts=screen_opts,

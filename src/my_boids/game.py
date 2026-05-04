@@ -3,7 +3,7 @@ import pygame as pg
 
 from my_boids.boid_vs_boundary import boid_vs_boundary
 from my_boids.boids import Boid
-from my_boids.flock_rules import flock_rules
+from my_boids.flock_rules import flock_rules, react_to_predator
 from my_boids.options import BoidOptions, ScreenOptions
 from my_boids.performance import PerformanceMonitor
 from my_boids.predator import Predator
@@ -135,6 +135,12 @@ class Game:
                 return True
             if event.type == pg.MOUSEBUTTONDOWN and self.game_over:
                 self.reset()
+            if event.type == pg.KEYUP and event.key == pg.K_p:
+                # Toggle predator behavior mode between avoid and attract
+                if self.boid_opts.predator_behavior_mode == "avoid":
+                    self.boid_opts.predator_behavior_mode = "attract"
+                else:
+                    self.boid_opts.predator_behavior_mode = "avoid"
 
         return False
 
@@ -193,30 +199,13 @@ class Game:
             visual_range=float(boid_opts.visual_range),
         )
 
-        # Apply movement rules for boids relative to the predator
-        # Note: Predator is treated as a boid for avoidance purposes
-        # Use larger search radius for predator avoidance
-        predator_search_radius = float(boid_opts.visual_range) * 10
-        if self.use_spatial_grid and self.spatial_grid:
-            nearby_predators = self.spatial_grid.get_nearby_boids(
-                boid.pos,
-                search_radius=predator_search_radius,
-            )
-            # Filter to only include the predator (if it's a Boid subclass)
-            nearby_predators = [
-                b for b in nearby_predators if isinstance(b, Boid) and b is self.predator
-            ]  # type: ignore[misc]
-        else:
-            nearby_predators = [boid for boid in [self.predator] if isinstance(boid, Boid)]  # type: ignore[misc]
-
-        flock_rules(
+        # Apply predator reaction behavior
+        react_to_predator(
             boid,
-            nearby_predators,
-            cohesion_factor=boid_opts.cohesion_factor * -2,
-            separation=boid_opts.separation * 2,
-            avoid_factor=boid_opts.avoid_factor * 1.2,
-            alignment_factor=boid_opts.alignment_factor * -1.5,
-            visual_range=predator_search_radius,
+            self.predator,
+            behavior_mode=boid_opts.predator_behavior_mode,
+            detection_range=boid_opts.predator_detection_range,
+            reaction_strength=boid_opts.predator_reaction_strength,
         )
 
         # Apply speed limit and boundary constraints
@@ -273,6 +262,23 @@ class Game:
         )
         text_rect = text.get_rect()
         text_rect.topright = (winsize[0] - 10, 10)
+        screen.blit(text, text_rect)
+
+    def display_predator_mode(self, screen: pg.Surface):
+        """Display the current predator behavior mode to the screen.
+
+        Args:
+            screen (pg.Surface): Screen on which to draw the text.
+        """
+        font = pg.font.SysFont("serif", 25)
+        mode_text = self.boid_opts.predator_behavior_mode.upper()
+        text = font.render(
+            f"Predator Mode: {mode_text}",
+            True,
+            pg.Color("white"),
+        )
+        text_rect = text.get_rect()
+        text_rect.topleft = (10, 10)
         screen.blit(text, text_rect)
 
     def display_game_over_text(self, screen: pg.Surface):
@@ -347,6 +353,7 @@ class Game:
         if not self.game_over:
             self.all_sprites_list.draw(screen)
             self.display_score(screen)
+            self.display_predator_mode(screen)
 
             # Display performance metrics if enabled
             if self.show_metrics:
