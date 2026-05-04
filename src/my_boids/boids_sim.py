@@ -13,7 +13,7 @@ def main():
     # Initialize Pygame and set up the window
     pg.init()
 
-    screen_opts = ScreenOptions()
+    screen_opts = ScreenOptions.from_config()
 
     if screen_opts.fullscreen:
         screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
@@ -36,6 +36,9 @@ def main():
 
     # Main game loop
     while not done:
+        # Start performance monitoring for this frame
+        game.performance.start_frame()
+
         # Process events (keystrokes, mouse clicks, etc)
         done = game.process_events()
 

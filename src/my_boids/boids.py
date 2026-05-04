@@ -2,6 +2,7 @@
 Create a boid and define its movement rules
 """
 
+
 import pygame as pg
 
 # Boid Constants
@@ -14,9 +15,11 @@ class Boid(pg.sprite.Sprite):
 
     def __init__(
         self,
-        pos: pg.Vector2 = pg.Vector2(0, 0),
-        vel: pg.Vector2 = pg.Vector2(0, 0),
-        color: pg.Color = pg.Color(255, 255, 255),
+        pos: pg.Vector2 | tuple[float, float] = pg.Vector2(0, 0),
+        vel: pg.Vector2 | tuple[float, float] = pg.Vector2(0, 0),
+        color: pg.Color | tuple[int, int, int] | tuple[int, int, int, int] = pg.Color(
+            255, 255, 255
+        ),
         size: int = 10,
         width: int = 10,
         height: int = 10,

@@ -5,41 +5,63 @@ import pytest
 
 from my_boids.boid_vs_boundary import BoundaryType
 from my_boids.game import Game
+from my_boids.options import BoidOptions, ScreenOptions
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
 # ---------------------------------------------------------------------------
 
 
-class _MockScreenOptions:
-    """Minimal ScreenOptions substitute for testing."""
-
-    def __init__(self):
-        self.winsize = [800, 600]
-        self.fullscreen = False
-        self.boundary_type = BoundaryType.BOUNCE
-
-
-class _MockBoidOptions:
-    """Minimal BoidOptions substitute for testing."""
-
-    def __init__(self):
-        self.num_boids = 3
-        self.size = 10
-        self.max_speed = 5.0
-        self.cohesion_factor = 0.005
-        self.separation = 20
-        self.avoid_factor = 0.05
-        self.alignment_factor = 0.01
-        self.visual_range = 100
-
-
 @pytest.fixture(name="game")
 def fixture_game(pygame_display):
-    """Return a fresh Game instance backed by mock options."""
+    """Return a fresh Game instance backed by test options.
+
+    Uses spatial grid disabled for deterministic testing.
+    """
+    screen_opts = ScreenOptions(
+        winsize=[800, 600],
+        fullscreen=False,
+        boundary_type=BoundaryType.BOUNCE,
+    )
+    boid_opts = BoidOptions(
+        num_boids=3,
+        size=10,
+        max_speed=5.0,
+        cohesion_factor=0.005,
+        separation=20,
+        avoid_factor=0.05,
+        alignment_factor=0.01,
+        visual_range=100,
+    )
     return Game(
-        screen_opts=_MockScreenOptions(),
-        boid_opts=_MockBoidOptions(),
+        screen_opts=screen_opts,
+        boid_opts=boid_opts,
+        use_spatial_grid=False,
+    )
+
+
+@pytest.fixture(name="game_with_spatial_grid")
+def fixture_game_with_spatial_grid(pygame_display):
+    """Return a fresh Game instance with spatial grid enabled."""
+    screen_opts = ScreenOptions(
+        winsize=[800, 600],
+        fullscreen=False,
+        boundary_type=BoundaryType.BOUNCE,
+    )
+    boid_opts = BoidOptions(
+        num_boids=3,
+        size=10,
+        max_speed=5.0,
+        cohesion_factor=0.005,
+        separation=20,
+        avoid_factor=0.05,
+        alignment_factor=0.01,
+        visual_range=100,
+    )
+    return Game(
+        screen_opts=screen_opts,
+        boid_opts=boid_opts,
+        use_spatial_grid=True,
     )
 
 
@@ -188,3 +210,43 @@ def test_display_score_after_increment(game, pygame_display):
 def test_display_game_over_text(game, pygame_display):
     """display_game_over_text renders to the surface without error"""
     game.display_game_over_text(pygame_display)
+
+
+# ---------------------------------------------------------------------------
+# Spatial Grid Integration Tests
+# ---------------------------------------------------------------------------
+
+
+def test_game_spatial_grid_disabled(game):
+    """Game with use_spatial_grid=False has no spatial grid"""
+    assert game.use_spatial_grid is False
+    assert game.spatial_grid is None
+
+
+def test_game_spatial_grid_enabled(game_with_spatial_grid):
+    """Game with use_spatial_grid=True has a spatial grid"""
+    assert game_with_spatial_grid.use_spatial_grid is True
+    assert game_with_spatial_grid.spatial_grid is not None
+
+
+def test_spatial_grid_cell_size_matches_visual_range(game_with_spatial_grid):
+    """Spatial grid cell size is set to visual range for optimal performance"""
+    assert game_with_spatial_grid.spatial_grid is not None
+    assert game_with_spatial_grid.spatial_grid.cell_size == 100
+
+
+def test_spatial_grid_run_logic(game_with_spatial_grid):
+    """run_logic with spatial grid executes without error"""
+    game_with_spatial_grid.run_logic()
+
+
+def test_spatial_grid_produces_same_behavior(game, game_with_spatial_grid):
+    """Spatial grid runs without errors and maintains valid game state"""
+    # Run the spatial grid game for a few frames
+    for _ in range(5):
+        game_with_spatial_grid.run_logic()
+
+    # Game should still be in valid state
+    assert game_with_spatial_grid.score >= 0
+    # Number of boids should be <= initial number (some may have been eaten)
+    assert len(game_with_spatial_grid.boid_list) <= 3

@@ -104,6 +104,35 @@ uv run mypy src/my_boids tests
 uv run pytest tests/ --cov=my_boids --cov-report=html --cov-report=term
 ```
 
+## Performance Monitoring
+
+The simulation includes built-in performance monitoring that displays real-time metrics on screen:
+
+- **FPS**: Frames per second
+- **Frame Time**: Milliseconds per frame
+- **Boids Count**: Number of active boids
+- **Mode**: Current optimization mode (Brute Force or Spatial Grid)
+- **Timing Breakdown**: Individual operation times (Update, Logic, Collision, Render)
+
+### Performance Analysis
+
+A comprehensive performance benchmark has been conducted comparing different optimization strategies. Key findings:
+
+- **Brute Force (O(n²))**: Best performance for < 300 boids
+- **Spatial Grid (O(n))**: Only beneficial at 500+ boids due to grid rebuilding overhead
+
+See [PERFORMANCE_ANALYSIS.md](PERFORMANCE_ANALYSIS.md) for detailed benchmark results and optimization recommendations.
+
+### Running Benchmarks
+
+To benchmark the simulation yourself:
+
+```bash
+uv run python benchmark_performance.py
+```
+
+This will test both brute force and spatial grid modes across multiple boid counts (50, 100, 200, 500) and display a detailed comparison table.
+
 ## Simulation Settings
 
 Adjust the parameters in the `[screen]` section of `config.ini` to change some general game settings:
