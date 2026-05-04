@@ -9,6 +9,14 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from my_boids.boid_vs_boundary import BoundaryType
 
+PredatorBehaviorMode = Literal["avoid", "attract"]
+PREDATOR_MODE_AVOID: PredatorBehaviorMode = "avoid"
+PREDATOR_MODE_ATTRACT: PredatorBehaviorMode = "attract"
+PREDATOR_BEHAVIOR_MODES: tuple[PredatorBehaviorMode, PredatorBehaviorMode] = (
+    PREDATOR_MODE_AVOID,
+    PREDATOR_MODE_ATTRACT,
+)
+
 
 @lru_cache(maxsize=1)
 def load_config(config_path: str = "config.ini") -> configparser.ConfigParser:
@@ -80,7 +88,7 @@ class BoidOptions(BaseModel):
     avoid_factor: float = Field(default=0.05, ge=0.01, le=0.2)
     alignment_factor: float = Field(default=0.05, ge=0.01, le=0.2)
     visual_range: int = Field(default=40, ge=20, le=100)
-    predator_behavior_mode: Literal["avoid", "attract"] = Field(default="avoid")
+    predator_behavior_mode: PredatorBehaviorMode = Field(default=PREDATOR_MODE_AVOID)
     predator_detection_range: float = Field(default=400.0, ge=100.0, le=600.0)
     predator_reaction_strength: float = Field(default=0.5, ge=0.1, le=2.0)
 
@@ -107,7 +115,7 @@ class BoidOptions(BaseModel):
         mode_raw = config["boids"].get(
             "predator_behavior_mode", fallback=defaults.predator_behavior_mode
         )
-        if mode_raw not in ("avoid", "attract"):
+        if mode_raw not in PREDATOR_BEHAVIOR_MODES:
             mode_raw = defaults.predator_behavior_mode
 
         return cls(
@@ -123,7 +131,7 @@ class BoidOptions(BaseModel):
                 "alignment_factor", fallback=defaults.alignment_factor
             ),
             visual_range=config["boids"].getint("visual_range", fallback=defaults.visual_range),
-            predator_behavior_mode=cast(Literal["avoid", "attract"], mode_raw),
+            predator_behavior_mode=cast(PredatorBehaviorMode, mode_raw),
             predator_detection_range=config["boids"].getfloat(
                 "predator_detection_range", fallback=defaults.predator_detection_range
             ),

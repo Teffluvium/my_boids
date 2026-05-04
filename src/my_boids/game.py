@@ -4,7 +4,7 @@ import pygame as pg
 from my_boids.boid_vs_boundary import boid_vs_boundary
 from my_boids.boids import Boid
 from my_boids.flock_rules import flock_rules, react_to_predator
-from my_boids.options import BoidOptions, ScreenOptions
+from my_boids.options import PREDATOR_MODE_ATTRACT, PREDATOR_MODE_AVOID, BoidOptions, ScreenOptions
 from my_boids.performance import PerformanceMonitor
 from my_boids.predator import Predator
 from my_boids.spatial_grid import SpatialGrid
@@ -144,10 +144,10 @@ class Game:
                 self.reset()
             if event.type == pg.KEYUP and event.key == pg.K_p:
                 # Toggle predator behavior mode between avoid and attract
-                if self.boid_opts.predator_behavior_mode == "avoid":
-                    self.boid_opts.predator_behavior_mode = "attract"
+                if self.boid_opts.predator_behavior_mode == PREDATOR_MODE_AVOID:
+                    self.boid_opts.predator_behavior_mode = PREDATOR_MODE_ATTRACT
                 else:
-                    self.boid_opts.predator_behavior_mode = "avoid"
+                    self.boid_opts.predator_behavior_mode = PREDATOR_MODE_AVOID
 
         return False
 

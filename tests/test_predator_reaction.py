@@ -3,6 +3,7 @@ import pytest
 
 from my_boids.boids import Boid
 from my_boids.flock_rules import react_to_predator
+from my_boids.options import PREDATOR_MODE_ATTRACT, PREDATOR_MODE_AVOID
 from my_boids.predator import Predator
 
 
@@ -33,7 +34,7 @@ def test_avoid_mode_moves_boid_away(test_boid, test_predator):
     react_to_predator(
         test_boid,
         test_predator,
-        behavior_mode="avoid",
+        behavior_mode=PREDATOR_MODE_AVOID,
         detection_range=400.0,
         reaction_strength=0.5,
     )
@@ -52,7 +53,7 @@ def test_attract_mode_moves_boid_toward(test_boid, test_predator):
     react_to_predator(
         test_boid,
         test_predator,
-        behavior_mode="attract",
+        behavior_mode=PREDATOR_MODE_ATTRACT,
         detection_range=400.0,
         reaction_strength=0.5,
     )
@@ -73,7 +74,7 @@ def test_no_effect_beyond_detection_range(test_boid, test_predator):
     react_to_predator(
         test_boid,
         test_predator,
-        behavior_mode="avoid",
+        behavior_mode=PREDATOR_MODE_AVOID,
         detection_range=50.0,  # Less than actual distance
         reaction_strength=0.5,
     )
@@ -108,7 +109,7 @@ def test_force_stronger_when_closer():
     react_to_predator(
         boid_close,
         predator,
-        behavior_mode="avoid",
+        behavior_mode=PREDATOR_MODE_AVOID,
         detection_range=400.0,
         reaction_strength=0.5,
     )
@@ -116,7 +117,7 @@ def test_force_stronger_when_closer():
     react_to_predator(
         boid_far,
         predator,
-        behavior_mode="avoid",
+        behavior_mode=PREDATOR_MODE_AVOID,
         detection_range=400.0,
         reaction_strength=0.5,
     )
@@ -142,7 +143,7 @@ def test_edge_case_same_position():
     react_to_predator(
         boid,
         predator,
-        behavior_mode="avoid",
+        behavior_mode=PREDATOR_MODE_AVOID,
         detection_range=400.0,
         reaction_strength=0.5,
     )
@@ -175,7 +176,7 @@ def test_reaction_strength_scaling():
     react_to_predator(
         boid_weak,
         predator,
-        behavior_mode="avoid",
+        behavior_mode=PREDATOR_MODE_AVOID,
         detection_range=400.0,
         reaction_strength=0.1,
     )
@@ -183,7 +184,7 @@ def test_reaction_strength_scaling():
     react_to_predator(
         boid_strong,
         predator,
-        behavior_mode="avoid",
+        behavior_mode=PREDATOR_MODE_AVOID,
         detection_range=400.0,
         reaction_strength=1.0,
     )

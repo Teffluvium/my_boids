@@ -35,7 +35,12 @@ from pygame_gui.elements import (
     UITextEntryLine,
 )
 
-from my_boids.options import BoidOptions, ScreenOptions, load_config
+from my_boids.options import (
+    PREDATOR_BEHAVIOR_MODES,
+    BoidOptions,
+    ScreenOptions,
+    load_config,
+)
 
 if TYPE_CHECKING:
     from my_boids.game import Game
@@ -255,7 +260,7 @@ class SettingsDialog:
             container=self._panel,
         )
         self._predator_dd = UIDropDownMenu(
-            options_list=["avoid", "attract"],
+            options_list=list(PREDATOR_BEHAVIOR_MODES),
             starting_option=self._game.boid_opts.predator_behavior_mode,
             relative_rect=pg.Rect(_PAD + _LBL_W + _PAD, cy, _SLD_W + _PAD + _TXT_W, _ROW_H),
             manager=self._manager,
@@ -388,7 +393,7 @@ class SettingsDialog:
                 old_rect = self._predator_dd.relative_rect.copy()
                 self._predator_dd.kill()
                 self._predator_dd = UIDropDownMenu(
-                    options_list=["avoid", "attract"],
+                    options_list=list(PREDATOR_BEHAVIOR_MODES),
                     starting_option=boid_opts.predator_behavior_mode,
                     relative_rect=old_rect,
                     manager=self._manager,

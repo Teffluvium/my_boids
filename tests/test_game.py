@@ -5,7 +5,7 @@ import pytest
 
 from my_boids.boid_vs_boundary import BoundaryType
 from my_boids.game import Game
-from my_boids.options import BoidOptions, ScreenOptions
+from my_boids.options import PREDATOR_MODE_AVOID, BoidOptions, ScreenOptions
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
@@ -32,7 +32,7 @@ def fixture_game(pygame_display):
         avoid_factor=0.05,
         alignment_factor=0.01,
         visual_range=100,
-        predator_behavior_mode="avoid",
+        predator_behavior_mode=PREDATOR_MODE_AVOID,
         predator_detection_range=400.0,
         predator_reaction_strength=0.5,
     )
@@ -60,7 +60,7 @@ def fixture_game_with_spatial_grid(pygame_display):
         avoid_factor=0.05,
         alignment_factor=0.01,
         visual_range=100,
-        predator_behavior_mode="avoid",
+        predator_behavior_mode=PREDATOR_MODE_AVOID,
         predator_detection_range=400.0,
         predator_reaction_strength=0.5,
     )
