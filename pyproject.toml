@@ -16,7 +16,7 @@ package = true
 my_boids = ["assets/*"]
 
 [dependency-groups]
-dev = ["mypy>=1.14.1", "pytest>=8.3.5", "pytest-cov>=6.0.0", "ruff>=0.8.5"]
+dev = ["mypy>=1.14.1", "pytest>=9.0.3", "pytest-cov>=6.0.0", "ruff>=0.8.5"]
 
 [tool.ruff]
 line-length = 100
