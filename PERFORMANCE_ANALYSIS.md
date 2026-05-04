@@ -41,7 +41,7 @@ Based on the benchmark, the crossover point where spatial partitioning becomes b
 
 - **Brute Force**: O(n²) - every boid checks every other boid
   - 50 boids: 2,500 comparisons
-  - 100 boids: 10,000 comparisons  
+  - 100 boids: 10,000 comparisons
   - 500 boids: 250,000 comparisons
 
 - **Spatial Grid**: O(n) average case, but with overhead
@@ -71,7 +71,7 @@ def __init__(
     # Auto-detect if not specified
     if use_spatial_grid is None:
         use_spatial_grid = self.boid_opts.num_boids >= 300
-    
+
     self.use_spatial_grid = use_spatial_grid
 ```
 
