@@ -19,7 +19,7 @@ my_boids = ["assets/*"]
 dev = [
     "mypy>=1.14.1",
     "pre-commit>=4.0.0",
-    "pytest>=8.3.5",
+    "pytest>=9.0.3",
     "pytest-cov>=6.0.0",
     "ruff>=0.8.5",
 ]
