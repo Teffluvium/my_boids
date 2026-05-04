@@ -65,15 +65,48 @@ This project uses UV for dependency management, ruff for linting and formatting,
 The project includes a Makefile with common development tasks:
 
 - `make install` - Install dependencies using UV
+- `make install-hooks` - Install pre-commit hooks
 - `make format` - Format code using ruff
 - `make lint` - Check code for linting issues
 - `make lint-fix` - Auto-fix linting issues where possible
 - `make type-check` - Run mypy type checking
 - `make test` - Run tests with coverage
+- `make pre-commit` - Run pre-commit hooks on all files
 - `make run` - Run the boids simulation
 - `make clean` - Remove generated files and caches
+- `make uninstall-hooks` - Uninstall pre-commit hooks
 - `make all` - Run format, lint, type-check, and test in sequence
 - `make help` - Show all available targets
+
+### Pre-commit Hooks
+
+The project uses pre-commit hooks to automatically check code quality before commits. To set up:
+
+```bash
+# Install pre-commit hooks
+make install-hooks
+```
+
+Or manually:
+
+```bash
+uv run --with pre-commit pre-commit install
+```
+
+Once installed, the hooks will automatically run on every commit. To manually run all hooks:
+
+```bash
+make pre-commit
+```
+
+The following checks run automatically:
+- Ruff linting and formatting
+- Mypy type checking
+- Trailing whitespace removal
+- End-of-file fixes
+- YAML, JSON, and TOML validation
+- Large file detection
+- Private key detection
 
 ### Manual Commands
 

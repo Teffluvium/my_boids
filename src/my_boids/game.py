@@ -324,10 +324,10 @@ class Game:
         # Add timing breakdown if available
         if self.performance.current_metrics:
             m = self.performance.current_metrics
-            metrics.append(f"Update: {m.update_time*1000:.2f}ms")
-            metrics.append(f"Logic: {m.logic_time*1000:.2f}ms")
-            metrics.append(f"Collision: {m.collision_time*1000:.2f}ms")
-            metrics.append(f"Render: {m.render_time*1000:.2f}ms")
+            metrics.append(f"Update: {m.update_time * 1000:.2f}ms")
+            metrics.append(f"Logic: {m.logic_time * 1000:.2f}ms")
+            metrics.append(f"Collision: {m.collision_time * 1000:.2f}ms")
+            metrics.append(f"Render: {m.render_time * 1000:.2f}ms")
 
         # Render each line
         for line in metrics:

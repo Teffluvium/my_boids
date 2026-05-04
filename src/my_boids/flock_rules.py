@@ -1,6 +1,5 @@
 """Define rules for Boid behavior in a flock."""
 
-
 import pygame as pg
 
 from my_boids.boids import Boid

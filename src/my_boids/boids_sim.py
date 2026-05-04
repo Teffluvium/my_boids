@@ -46,7 +46,7 @@ def main():
         game.run_logic()
 
         # Draw the current frame
-        game.display_frame(screen)  # type: ignore
+        game.display_frame(screen)
 
         # Pause for the next frame
         clock.tick(50)
