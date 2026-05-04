@@ -82,9 +82,9 @@ class Game:
             pos=pg.Vector2(float(pos_array[0]), float(pos_array[1])),
             vel=pg.Vector2(float(vel_array[0]), float(vel_array[1])),
             color=pg.Color(int(color_array[0]), int(color_array[1]), int(color_array[2])),
-            size=20,
-            width=20,
-            height=20,
+            size=boid_opts.size,
+            width=boid_opts.size,
+            height=boid_opts.size,
         )
         boid.speed_limit(boid_opts.max_speed)
         return boid
@@ -126,11 +126,18 @@ class Game:
         # Reinitialize sprites
         self._initialize_sprites()
 
-    def process_events(self) -> bool:
+    def process_events(self, events: list | None = None) -> bool:
         """Process all of the events. Return a "True" if we need
-        to close the window."""
+        to close the window.
 
-        for event in pg.event.get():
+        Args:
+            events: Pre-fetched list of pygame events. If None, fetches from
+                the event queue via pg.event.get() (original behaviour).
+        """
+        if events is None:
+            events = pg.event.get()
+
+        for event in events:
             if event.type == pg.QUIT or (event.type == pg.KEYUP and event.key == pg.K_ESCAPE):
                 return True
             if event.type == pg.MOUSEBUTTONDOWN and self.game_over:
@@ -143,6 +150,43 @@ class Game:
                     self.boid_opts.predator_behavior_mode = "avoid"
 
         return False
+
+    def update_boid_options(self, new_opts: BoidOptions) -> None:
+        """Apply new boid options to the running simulation.
+
+        Boid behaviour parameters take effect immediately. If num_boids
+        changed, boids are added or removed to match the new count.
+
+        Args:
+            new_opts: Validated BoidOptions instance from the settings dialog.
+        """
+        old_count = len(self.boid_list)
+        old_size = self.boid_opts.size
+        self.boid_opts = new_opts
+
+        # Resize existing boids if size changed
+        if new_opts.size != old_size:
+            for boid in self.boid_list:
+                s = new_opts.size
+                boid.image = pg.Surface([s, s])
+                boid.image.fill(pg.Color("black"))
+                boid.image.set_colorkey(pg.Color("black"))
+                pg.draw.ellipse(boid.image, boid.color, [0, 0, s, s])
+                boid.rect = boid.image.get_rect()
+                boid.rect.center = boid.pos.xy  # type: ignore[assignment]
+
+        target_count = new_opts.num_boids
+        if target_count > old_count:
+            for _ in range(target_count - old_count):
+                boid = self._create_boid()
+                self.boid_list.add(boid)
+                self.all_sprites_list.add(boid)
+        elif target_count < old_count:
+            for boid in list(self.boid_list)[target_count:]:
+                boid.kill()
+
+        if self.spatial_grid is not None:
+            self.spatial_grid = SpatialGrid(cell_size=float(new_opts.visual_range))
 
     def run_logic(self):
         """
@@ -341,8 +385,15 @@ class Game:
             screen.blit(text, (10, y_offset))
             y_offset += 18
 
-    def display_frame(self, screen: pg.Surface):
-        """Display everything to the screen for the game."""
+    def display_frame(self, screen: pg.Surface, flip: bool = True):
+        """Display everything to the screen for the game.
+
+        Args:
+            screen: The pygame surface to draw onto.
+            flip: If True (default) call pg.display.flip() at the end. Pass
+                False when the caller needs to draw additional UI on top before
+                flipping (e.g. pygame_gui overlay).
+        """
         self.performance.start_operation()
 
         screen.fill(pg.Color("black"))
@@ -359,6 +410,7 @@ class Game:
             if self.show_metrics:
                 self.display_metrics(screen)
 
-        pg.display.flip()
+        if flip:
+            pg.display.flip()
         self.performance.end_operation("render")
         self.performance.end_frame()
