@@ -5,13 +5,14 @@ from pathlib import Path
 import pygame_gui
 import pytest
 
-from my_boids.boid_vs_boundary import BoundaryType
 from my_boids.game import Game
 from my_boids.options import (
     PREDATOR_ATTACK_MODE_CENTER,
     PREDATOR_ATTACK_MODE_NEAREST,
     PREDATOR_MODE_AVOID,
     BoidOptions,
+    BoundaryType,
+    PredatorOptions,
     ScreenOptions,
 )
 from my_boids.settings_ui import SettingsDialog
@@ -19,7 +20,6 @@ from my_boids.settings_ui import SettingsDialog
 
 @pytest.fixture(name="ui_game")
 def fixture_ui_game(pygame_display):
-    """Return a minimal game instance for settings UI tests."""
     screen_opts = ScreenOptions(
         winsize=[800, 600],
         fullscreen=False,
@@ -34,6 +34,8 @@ def fixture_ui_game(pygame_display):
         avoid_factor=0.05,
         alignment_factor=0.01,
         visual_range=100,
+    )
+    predator_opts = PredatorOptions(
         predator_behavior_mode=PREDATOR_MODE_AVOID,
         predator_attack_mode=PREDATOR_ATTACK_MODE_CENTER,
         predator_detection_range=400.0,
@@ -42,6 +44,7 @@ def fixture_ui_game(pygame_display):
     return Game(
         screen_opts=screen_opts,
         boid_opts=boid_opts,
+        predator_opts=predator_opts,
         use_spatial_grid=False,
         show_metrics=False,
         enable_profiling=False,
@@ -65,6 +68,8 @@ separation = 20.0
 avoid_factor = 0.05
 alignment_factor = 0.05
 visual_range = 40
+
+[predator]
 predator_behavior_mode = avoid
 predator_attack_mode = center
 predator_detection_range = 400.0
@@ -76,25 +81,25 @@ predator_reaction_strength = 0.5
 
 
 def test_settings_dialog_collects_attack_strategy(tmp_path: Path, ui_game: Game):
-    """Collected values include predator_attack_mode from dropdown state."""
     dialog = _make_dialog(tmp_path, ui_game)
     dialog.open((800, 600))
 
-    updated_opts = ui_game.boid_opts.model_copy(update={"predator_attack_mode": "nearest"})
-    dialog._populate(updated_opts, ui_game.screen_opts)
+    updated_predator = ui_game.predator_opts.model_copy(update={"predator_attack_mode": "nearest"})
+    dialog._populate(ui_game.boid_opts, updated_predator, ui_game.screen_opts)
 
-    values = dialog._collect_boid_values()
+    values = dialog._collect_predator_values()
     assert values["predator_attack_mode"] == PREDATOR_ATTACK_MODE_NEAREST
 
     dialog.close()
 
 
-def test_settings_dialog_write_config_does_not_append_none(tmp_path: Path, ui_game: Game):
-    """Config writes keep key/value lines clean when there is no inline comment."""
+def test_settings_dialog_handle_save_writes_predator_section(tmp_path: Path, ui_game: Game):
     dialog = _make_dialog(tmp_path, ui_game)
-    dialog._write_config(ui_game.boid_opts)
+    dialog.open((800, 600))
+    dialog._handle_save()
 
     text = (tmp_path / "config.ini").read_text()
-    assert "None" not in text
+    assert "[predator]" in text
     assert "predator_attack_mode = center" in text
     assert "num_boids = 3" in text
+    assert "None" not in text

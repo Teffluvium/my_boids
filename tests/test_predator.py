@@ -3,7 +3,8 @@
 import pygame as pg
 import pytest
 
-from my_boids.predator import Predator, move_to
+from my_boids.movement import move_to
+from my_boids.predator import Predator
 
 # ---------------------------------------------------------------------------
 # move_to (pure logic – no display required)
