@@ -7,7 +7,6 @@ requires-python = ">=3.12"
 dependencies = [
     "numpy>=2.2.1",
     "pydantic>=2.0",
-    "pygame>=2.6.1",
     "pygame-gui>=0.6.0",
 ]
 
