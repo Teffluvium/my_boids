@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 import numpy as np
 import pygame as pg
 
@@ -5,12 +7,14 @@ from my_boids.boid_vs_boundary import boid_vs_boundary
 from my_boids.boids import Boid
 from my_boids.flock_rules import flock_rules, react_to_predator
 from my_boids.options import (
-    PREDATOR_ATTACK_CENTER,
-    PREDATOR_ATTACK_ISOLATED,
-    PREDATOR_ATTACK_MOUSE,
+    PREDATOR_ATTACK_MODE_CENTER,
+    PREDATOR_ATTACK_MODE_ISOLATED,
+    PREDATOR_ATTACK_MODE_MOUSE,
+    PREDATOR_ATTACK_MODE_NEAREST,
     PREDATOR_MODE_ATTRACT,
     PREDATOR_MODE_AVOID,
     BoidOptions,
+    PredatorAttackMode,
     ScreenOptions,
 )
 from my_boids.performance import PerformanceMonitor
@@ -71,6 +75,18 @@ class Game:
 
         # Initialize sprites
         self._initialize_sprites()
+        self._predator_attack_mode_strategies = self._build_predator_attack_mode_strategies()
+
+    def _build_predator_attack_mode_strategies(
+        self,
+    ) -> dict[PredatorAttackMode, Callable[[], pg.Vector2]]:
+        """Build map of predator attack mode handlers (Strategy pattern)."""
+        return {
+            PREDATOR_ATTACK_MODE_MOUSE: self._target_mouse_cursor,
+            PREDATOR_ATTACK_MODE_CENTER: self._target_flock_center,
+            PREDATOR_ATTACK_MODE_NEAREST: self._target_nearest_bird,
+            PREDATOR_ATTACK_MODE_ISOLATED: self._target_most_isolated_bird,
+        }
 
     def _create_boid(self) -> Boid:
         """Create a single boid with random position, velocity, and color.
@@ -223,38 +239,53 @@ class Game:
         self.predator.update(self._get_predator_target())
 
     def _get_predator_target(self) -> pg.Vector2:
-        """Return the predator target for the configured attack strategy."""
-        if self.boid_opts.predator_attack_strategy == PREDATOR_ATTACK_MOUSE:
-            return pg.Vector2(pg.mouse.get_pos())
+        """Return the predator target for the configured attack mode."""
+        mode = self.boid_opts.predator_attack_mode
+        strategy = self._predator_attack_mode_strategies.get(mode, self._target_mouse_cursor)
+        return strategy()
 
+    def _target_mouse_cursor(self) -> pg.Vector2:
+        """Target the live mouse cursor position."""
+        return pg.Vector2(pg.mouse.get_pos())
+
+    def _target_flock_center(self) -> pg.Vector2:
+        """Target the flock centroid."""
         if len(self.boid_list) == 0:
             return pg.Vector2(self.predator.pos)
 
-        strategy = self.boid_opts.predator_attack_strategy
         boids = list(self.boid_list)
+        total = pg.Vector2(0, 0)
+        for boid in boids:
+            total += boid.pos
+        return total / len(boids)
 
-        if strategy == PREDATOR_ATTACK_CENTER:
-            total = pg.Vector2(0, 0)
-            for boid in boids:
-                total += boid.pos
-            return total / len(boids)
+    def _target_nearest_bird(self) -> pg.Vector2:
+        """Target the boid nearest to the predator."""
+        if len(self.boid_list) == 0:
+            return pg.Vector2(self.predator.pos)
 
-        if strategy == PREDATOR_ATTACK_ISOLATED:
-            if len(boids) == 1:
-                return pg.Vector2(boids[0].pos)
-
-            def nearest_neighbor_distance(target_boid: Boid) -> float:
-                return min(
-                    target_boid.pos.distance_to(other_boid.pos)
-                    for other_boid in boids
-                    if other_boid is not target_boid
-                )
-
-            isolated_boid = max(boids, key=nearest_neighbor_distance)
-            return pg.Vector2(isolated_boid.pos)
-
+        boids = list(self.boid_list)
         nearest_boid = min(boids, key=lambda boid: self.predator.pos.distance_to(boid.pos))
         return pg.Vector2(nearest_boid.pos)
+
+    def _target_most_isolated_bird(self) -> pg.Vector2:
+        """Target the boid with the largest nearest-neighbor distance."""
+        if len(self.boid_list) == 0:
+            return pg.Vector2(self.predator.pos)
+
+        boids = list(self.boid_list)
+        if len(boids) == 1:
+            return pg.Vector2(boids[0].pos)
+
+        def nearest_neighbor_distance(target_boid: Boid) -> float:
+            return min(
+                target_boid.pos.distance_to(other_boid.pos)
+                for other_boid in boids
+                if other_boid is not target_boid
+            )
+
+        isolated_boid = max(boids, key=nearest_neighbor_distance)
+        return pg.Vector2(isolated_boid.pos)
 
     def _apply_boid_movement_rules(self, boid: Boid) -> None:
         """Apply all movement rules to a single boid.
@@ -369,8 +400,8 @@ class Game:
         text_rect.topleft = (10, 10)
         screen.blit(text, text_rect)
 
-    def display_predator_attack_strategy(self, screen: pg.Surface):
-        """Display the current predator attack strategy to the screen.
+    def display_predator_attack_mode(self, screen: pg.Surface):
+        """Display the current predator attack mode to the screen.
 
         Args:
             screen (pg.Surface): Screen on which to draw the text.
@@ -382,10 +413,10 @@ class Game:
             "nearest": "Nearest Bird",
             "isolated": "Most Isolated Bird",
         }
-        strategy = self.boid_opts.predator_attack_strategy
-        strategy_text = strategy_labels.get(strategy, strategy.replace("_", " ").title())
+        mode = self.boid_opts.predator_attack_mode
+        strategy_text = strategy_labels.get(mode, mode.replace("_", " ").title())
         text = font.render(
-            f"Predator Attack: {strategy_text}",
+            f"Predator Attack Mode: {strategy_text}",
             True,
             pg.Color("white"),
         )
@@ -473,7 +504,7 @@ class Game:
             self.all_sprites_list.draw(screen)
             self.display_score(screen)
             self.display_predator_mode(screen)
-            self.display_predator_attack_strategy(screen)
+            self.display_predator_attack_mode(screen)
 
             # Display performance metrics if enabled
             if self.show_metrics:

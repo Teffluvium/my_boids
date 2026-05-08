@@ -6,10 +6,10 @@ import pytest
 from my_boids.boid_vs_boundary import BoundaryType
 from my_boids.game import Game
 from my_boids.options import (
-    PREDATOR_ATTACK_CENTER,
-    PREDATOR_ATTACK_ISOLATED,
-    PREDATOR_ATTACK_MOUSE,
-    PREDATOR_ATTACK_NEAREST,
+    PREDATOR_ATTACK_MODE_CENTER,
+    PREDATOR_ATTACK_MODE_ISOLATED,
+    PREDATOR_ATTACK_MODE_MOUSE,
+    PREDATOR_ATTACK_MODE_NEAREST,
     PREDATOR_MODE_AVOID,
     BoidOptions,
     ScreenOptions,
@@ -41,7 +41,7 @@ def fixture_game(pygame_display):
         alignment_factor=0.01,
         visual_range=100,
         predator_behavior_mode=PREDATOR_MODE_AVOID,
-        predator_attack_strategy=PREDATOR_ATTACK_CENTER,
+        predator_attack_mode=PREDATOR_ATTACK_MODE_CENTER,
         predator_detection_range=400.0,
         predator_reaction_strength=0.5,
     )
@@ -70,7 +70,7 @@ def fixture_game_with_spatial_grid(pygame_display):
         alignment_factor=0.01,
         visual_range=100,
         predator_behavior_mode=PREDATOR_MODE_AVOID,
-        predator_attack_strategy=PREDATOR_ATTACK_CENTER,
+        predator_attack_mode=PREDATOR_ATTACK_MODE_CENTER,
         predator_detection_range=400.0,
         predator_reaction_strength=0.5,
     )
@@ -163,7 +163,7 @@ def test_get_predator_target_center_strategy(game):
     for boid, (x_pos, y_pos) in zip(game.boid_list, positions, strict=False):
         boid.pos = pg.Vector2(x_pos, y_pos)
 
-    game.boid_opts.predator_attack_strategy = PREDATOR_ATTACK_CENTER
+    game.boid_opts.predator_attack_mode = PREDATOR_ATTACK_MODE_CENTER
 
     assert game._get_predator_target() == pg.Vector2(200, 400 / 3)
 
@@ -175,7 +175,7 @@ def test_get_predator_target_nearest_strategy(game):
     for boid, (x_pos, y_pos) in zip(game.boid_list, positions, strict=False):
         boid.pos = pg.Vector2(x_pos, y_pos)
 
-    game.boid_opts.predator_attack_strategy = PREDATOR_ATTACK_NEAREST
+    game.boid_opts.predator_attack_mode = PREDATOR_ATTACK_MODE_NEAREST
 
     assert game._get_predator_target() == pg.Vector2(30, 20)
 
@@ -186,14 +186,14 @@ def test_get_predator_target_isolated_strategy(game):
     for boid, (x_pos, y_pos) in zip(game.boid_list, positions, strict=False):
         boid.pos = pg.Vector2(x_pos, y_pos)
 
-    game.boid_opts.predator_attack_strategy = PREDATOR_ATTACK_ISOLATED
+    game.boid_opts.predator_attack_mode = PREDATOR_ATTACK_MODE_ISOLATED
 
     assert game._get_predator_target() == pg.Vector2(400, 400)
 
 
 def test_get_predator_target_mouse_strategy(game, monkeypatch):
     """Mouse strategy targets the current mouse position."""
-    game.boid_opts.predator_attack_strategy = PREDATOR_ATTACK_MOUSE
+    game.boid_opts.predator_attack_mode = PREDATOR_ATTACK_MODE_MOUSE
     monkeypatch.setattr(pg.mouse, "get_pos", lambda: (123, 456))
 
     assert game._get_predator_target() == pg.Vector2(123, 456)
@@ -265,13 +265,13 @@ def test_display_score_after_increment(game, pygame_display):
     game.display_score(pygame_display)
 
 
-def test_display_predator_attack_strategy(game, pygame_display):
-    """display_predator_attack_strategy renders without error."""
-    game.display_predator_attack_strategy(pygame_display)
+def test_display_predator_attack_mode(game, pygame_display):
+    """display_predator_attack_mode renders without error."""
+    game.display_predator_attack_mode(pygame_display)
 
 
-def test_display_predator_attack_strategy_uses_friendly_label(game, pygame_display, monkeypatch):
-    """HUD shows a human-friendly predator attack strategy name."""
+def test_display_predator_attack_mode_uses_friendly_label(game, pygame_display, monkeypatch):
+    """HUD shows a human-friendly predator attack mode name."""
     captured_text: list[str] = []
 
     class FakeFont:
@@ -279,12 +279,12 @@ def test_display_predator_attack_strategy_uses_friendly_label(game, pygame_displ
             captured_text.append(text)
             return pg.Surface((1, 1))
 
-    game.boid_opts.predator_attack_strategy = PREDATOR_ATTACK_CENTER
+    game.boid_opts.predator_attack_mode = PREDATOR_ATTACK_MODE_CENTER
     monkeypatch.setattr(pg.font, "SysFont", lambda *args, **kwargs: FakeFont())
 
-    game.display_predator_attack_strategy(pygame_display)
+    game.display_predator_attack_mode(pygame_display)
 
-    assert captured_text == ["Predator Attack: Flock Center"]
+    assert captured_text == ["Predator Attack Mode: Flock Center"]
 
 
 def test_display_game_over_text(game, pygame_display):

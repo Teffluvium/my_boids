@@ -6,8 +6,8 @@ import pytest
 
 from my_boids.boid_vs_boundary import BoundaryType
 from my_boids.options import (
-    PREDATOR_ATTACK_MOUSE,
-    PREDATOR_ATTACK_NEAREST,
+    PREDATOR_ATTACK_MODE_MOUSE,
+    PREDATOR_ATTACK_MODE_NEAREST,
     BoidOptions,
     ScreenOptions,
     load_config,
@@ -80,31 +80,31 @@ def test_boid_options_visual_range():
     assert opts.visual_range == 40
 
 
-def test_boid_options_predator_attack_strategy():
-    """BoidOptions reads predator attack strategy from config."""
+def test_boid_options_predator_attack_mode():
+    """BoidOptions reads predator attack mode from config."""
     opts = BoidOptions.from_config()
-    assert opts.predator_attack_strategy == PREDATOR_ATTACK_MOUSE
+    assert opts.predator_attack_mode == PREDATOR_ATTACK_MODE_MOUSE
 
 
-def test_boid_options_predator_attack_strategy_custom(tmp_path: Path):
-    """BoidOptions reads a configured predator attack strategy."""
+def test_boid_options_predator_attack_mode_custom(tmp_path: Path):
+    """BoidOptions reads a configured predator attack mode."""
     config_path = tmp_path / "config.ini"
-    config_path.write_text("[boids]\npredator_attack_strategy = nearest\n")
+    config_path.write_text("[boids]\npredator_attack_mode = nearest\n")
     load_config.cache_clear()
 
     opts = BoidOptions.from_config(str(config_path))
 
-    assert opts.predator_attack_strategy == PREDATOR_ATTACK_NEAREST
+    assert opts.predator_attack_mode == PREDATOR_ATTACK_MODE_NEAREST
     load_config.cache_clear()
 
 
-def test_boid_options_predator_attack_strategy_invalid_falls_back(tmp_path: Path):
-    """Invalid predator attack strategy falls back to the default."""
+def test_boid_options_predator_attack_mode_invalid_falls_back(tmp_path: Path):
+    """Invalid predator attack mode falls back to the default."""
     config_path = tmp_path / "config.ini"
-    config_path.write_text("[boids]\npredator_attack_strategy = ambush\n")
+    config_path.write_text("[boids]\npredator_attack_mode = ambush\n")
     load_config.cache_clear()
 
     opts = BoidOptions.from_config(str(config_path))
 
-    assert opts.predator_attack_strategy == PREDATOR_ATTACK_MOUSE
+    assert opts.predator_attack_mode == PREDATOR_ATTACK_MODE_MOUSE
     load_config.cache_clear()

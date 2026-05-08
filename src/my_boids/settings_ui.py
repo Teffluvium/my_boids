@@ -36,7 +36,7 @@ from pygame_gui.elements import (
 )
 
 from my_boids.options import (
-    PREDATOR_ATTACK_STRATEGIES,
+    PREDATOR_ATTACK_MODES,
     PREDATOR_BEHAVIOR_MODES,
     BoidOptions,
     ScreenOptions,
@@ -277,8 +277,8 @@ class SettingsDialog:
             container=self._panel,
         )
         self._attack_strategy_dd = UIDropDownMenu(
-            options_list=list(PREDATOR_ATTACK_STRATEGIES),
-            starting_option=self._game.boid_opts.predator_attack_strategy,
+            options_list=list(PREDATOR_ATTACK_MODES),
+            starting_option=self._game.boid_opts.predator_attack_mode,
             relative_rect=pg.Rect(_PAD + _LBL_W + _PAD, cy, _SLD_W + _PAD + _TXT_W, _ROW_H),
             manager=self._manager,
             container=self._panel,
@@ -422,8 +422,8 @@ class SettingsDialog:
                 old_rect = self._attack_strategy_dd.relative_rect.copy()
                 self._attack_strategy_dd.kill()
                 self._attack_strategy_dd = UIDropDownMenu(
-                    options_list=list(PREDATOR_ATTACK_STRATEGIES),
-                    starting_option=boid_opts.predator_attack_strategy,
+                    options_list=list(PREDATOR_ATTACK_MODES),
+                    starting_option=boid_opts.predator_attack_mode,
                     relative_rect=old_rect,
                     manager=self._manager,
                     container=self._panel,
@@ -489,7 +489,7 @@ class SettingsDialog:
 
         if self._attack_strategy_dd is not None:
             raw_dd = self._attack_strategy_dd.selected_option
-            values["predator_attack_strategy"] = raw_dd[0] if isinstance(raw_dd, tuple) else raw_dd
+            values["predator_attack_mode"] = raw_dd[0] if isinstance(raw_dd, tuple) else raw_dd
 
         return values
 
@@ -549,7 +549,7 @@ class SettingsDialog:
             "alignment_factor": str(opts.alignment_factor),
             "visual_range": str(opts.visual_range),
             "predator_behavior_mode": opts.predator_behavior_mode,
-            "predator_attack_strategy": opts.predator_attack_strategy,
+            "predator_attack_mode": opts.predator_attack_mode,
             "predator_detection_range": str(opts.predator_detection_range),
             "predator_reaction_strength": str(opts.predator_reaction_strength),
         }

@@ -16,21 +16,21 @@ PREDATOR_BEHAVIOR_MODES: tuple[PredatorBehaviorMode, PredatorBehaviorMode] = (
     PREDATOR_MODE_AVOID,
     PREDATOR_MODE_ATTRACT,
 )
-PredatorAttackStrategy = Literal["mouse", "center", "nearest", "isolated"]
-PREDATOR_ATTACK_MOUSE: PredatorAttackStrategy = "mouse"
-PREDATOR_ATTACK_CENTER: PredatorAttackStrategy = "center"
-PREDATOR_ATTACK_NEAREST: PredatorAttackStrategy = "nearest"
-PREDATOR_ATTACK_ISOLATED: PredatorAttackStrategy = "isolated"
-PREDATOR_ATTACK_STRATEGIES: tuple[
-    PredatorAttackStrategy,
-    PredatorAttackStrategy,
-    PredatorAttackStrategy,
-    PredatorAttackStrategy,
+PredatorAttackMode = Literal["mouse", "center", "nearest", "isolated"]
+PREDATOR_ATTACK_MODE_MOUSE: PredatorAttackMode = "mouse"
+PREDATOR_ATTACK_MODE_CENTER: PredatorAttackMode = "center"
+PREDATOR_ATTACK_MODE_NEAREST: PredatorAttackMode = "nearest"
+PREDATOR_ATTACK_MODE_ISOLATED: PredatorAttackMode = "isolated"
+PREDATOR_ATTACK_MODES: tuple[
+    PredatorAttackMode,
+    PredatorAttackMode,
+    PredatorAttackMode,
+    PredatorAttackMode,
 ] = (
-    PREDATOR_ATTACK_MOUSE,
-    PREDATOR_ATTACK_CENTER,
-    PREDATOR_ATTACK_NEAREST,
-    PREDATOR_ATTACK_ISOLATED,
+    PREDATOR_ATTACK_MODE_MOUSE,
+    PREDATOR_ATTACK_MODE_CENTER,
+    PREDATOR_ATTACK_MODE_NEAREST,
+    PREDATOR_ATTACK_MODE_ISOLATED,
 )
 
 
@@ -105,7 +105,7 @@ class BoidOptions(BaseModel):
     alignment_factor: float = Field(default=0.05, ge=0.01, le=0.2)
     visual_range: int = Field(default=40, ge=20, le=100)
     predator_behavior_mode: PredatorBehaviorMode = Field(default=PREDATOR_MODE_AVOID)
-    predator_attack_strategy: PredatorAttackStrategy = Field(default=PREDATOR_ATTACK_MOUSE)
+    predator_attack_mode: PredatorAttackMode = Field(default=PREDATOR_ATTACK_MODE_MOUSE)
     predator_detection_range: float = Field(default=400.0, ge=100.0, le=600.0)
     predator_reaction_strength: float = Field(default=0.5, ge=0.1, le=2.0)
 
@@ -135,11 +135,15 @@ class BoidOptions(BaseModel):
         if mode_raw not in PREDATOR_BEHAVIOR_MODES:
             mode_raw = defaults.predator_behavior_mode
 
-        attack_strategy_raw = config["boids"].get(
-            "predator_attack_strategy", fallback=defaults.predator_attack_strategy
+        attack_mode_raw = config["boids"].get(
+            "predator_attack_mode",
+            fallback=config["boids"].get(
+                "predator_attack_strategy",
+                fallback=defaults.predator_attack_mode,
+            ),
         )
-        if attack_strategy_raw not in PREDATOR_ATTACK_STRATEGIES:
-            attack_strategy_raw = defaults.predator_attack_strategy
+        if attack_mode_raw not in PREDATOR_ATTACK_MODES:
+            attack_mode_raw = defaults.predator_attack_mode
 
         return cls(
             num_boids=config["boids"].getint("num_boids", fallback=defaults.num_boids),
@@ -155,7 +159,7 @@ class BoidOptions(BaseModel):
             ),
             visual_range=config["boids"].getint("visual_range", fallback=defaults.visual_range),
             predator_behavior_mode=cast(PredatorBehaviorMode, mode_raw),
-            predator_attack_strategy=cast(PredatorAttackStrategy, attack_strategy_raw),
+            predator_attack_mode=cast(PredatorAttackMode, attack_mode_raw),
             predator_detection_range=config["boids"].getfloat(
                 "predator_detection_range", fallback=defaults.predator_detection_range
             ),

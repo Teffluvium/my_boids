@@ -8,8 +8,8 @@ import pytest
 from my_boids.boid_vs_boundary import BoundaryType
 from my_boids.game import Game
 from my_boids.options import (
-    PREDATOR_ATTACK_CENTER,
-    PREDATOR_ATTACK_NEAREST,
+    PREDATOR_ATTACK_MODE_CENTER,
+    PREDATOR_ATTACK_MODE_NEAREST,
     PREDATOR_MODE_AVOID,
     BoidOptions,
     ScreenOptions,
@@ -35,7 +35,7 @@ def fixture_ui_game(pygame_display):
         alignment_factor=0.01,
         visual_range=100,
         predator_behavior_mode=PREDATOR_MODE_AVOID,
-        predator_attack_strategy=PREDATOR_ATTACK_CENTER,
+        predator_attack_mode=PREDATOR_ATTACK_MODE_CENTER,
         predator_detection_range=400.0,
         predator_reaction_strength=0.5,
     )
@@ -66,7 +66,7 @@ avoid_factor = 0.05
 alignment_factor = 0.05
 visual_range = 40
 predator_behavior_mode = avoid
-predator_attack_strategy = center
+predator_attack_mode = center
 predator_detection_range = 400.0
 predator_reaction_strength = 0.5
 """
@@ -76,15 +76,15 @@ predator_reaction_strength = 0.5
 
 
 def test_settings_dialog_collects_attack_strategy(tmp_path: Path, ui_game: Game):
-    """Collected values include predator_attack_strategy from dropdown state."""
+    """Collected values include predator_attack_mode from dropdown state."""
     dialog = _make_dialog(tmp_path, ui_game)
     dialog.open((800, 600))
 
-    updated_opts = ui_game.boid_opts.model_copy(update={"predator_attack_strategy": "nearest"})
+    updated_opts = ui_game.boid_opts.model_copy(update={"predator_attack_mode": "nearest"})
     dialog._populate(updated_opts, ui_game.screen_opts)
 
     values = dialog._collect_boid_values()
-    assert values["predator_attack_strategy"] == PREDATOR_ATTACK_NEAREST
+    assert values["predator_attack_mode"] == PREDATOR_ATTACK_MODE_NEAREST
 
     dialog.close()
 
@@ -96,5 +96,5 @@ def test_settings_dialog_write_config_does_not_append_none(tmp_path: Path, ui_ga
 
     text = (tmp_path / "config.ini").read_text()
     assert "None" not in text
-    assert "predator_attack_strategy = center" in text
+    assert "predator_attack_mode = center" in text
     assert "num_boids = 3" in text
