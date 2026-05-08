@@ -1,9 +1,19 @@
 """Tests for boids/options.py"""
 
+from pathlib import Path
+
 import pytest
 
-from my_boids.boid_vs_boundary import BoundaryType
-from my_boids.options import BoidOptions, ScreenOptions
+from my_boids.options import (
+    PREDATOR_ATTACK_MODE_CENTER,
+    PREDATOR_ATTACK_MODE_MOUSE,
+    PREDATOR_ATTACK_MODE_NEAREST,
+    BoidOptions,
+    BoundaryType,
+    PredatorOptions,
+    ScreenOptions,
+    load_config,
+)
 
 
 def test_screen_options_winsize():
@@ -70,3 +80,33 @@ def test_boid_options_visual_range():
     """BoidOptions reads visual_range from config"""
     opts = BoidOptions.from_config()
     assert opts.visual_range == 40
+
+
+def test_predator_options_attack_mode():
+    """PredatorOptions reads predator attack mode from config."""
+    opts = PredatorOptions.from_config()
+    assert opts.predator_attack_mode == PREDATOR_ATTACK_MODE_CENTER
+
+
+def test_predator_options_attack_mode_custom(tmp_path: Path):
+    """PredatorOptions reads a configured predator attack mode."""
+    config_path = tmp_path / "config.ini"
+    config_path.write_text("[predator]\npredator_attack_mode = nearest\n")
+    load_config.cache_clear()
+
+    opts = PredatorOptions.from_config(str(config_path))
+
+    assert opts.predator_attack_mode == PREDATOR_ATTACK_MODE_NEAREST
+    load_config.cache_clear()
+
+
+def test_predator_options_attack_mode_invalid_falls_back(tmp_path: Path):
+    """Invalid predator attack mode falls back to the default."""
+    config_path = tmp_path / "config.ini"
+    config_path.write_text("[predator]\npredator_attack_mode = ambush\n")
+    load_config.cache_clear()
+
+    opts = PredatorOptions.from_config(str(config_path))
+
+    assert opts.predator_attack_mode == PREDATOR_ATTACK_MODE_MOUSE
+    load_config.cache_clear()

@@ -1,10 +1,11 @@
-"""Define rules for Boid behavior in a flock."""
+"""Define rules for boid behavior in a flock."""
+
+import random
 
 import pygame as pg
 
 from my_boids.boids import Boid
 from my_boids.options import PREDATOR_MODE_AVOID, PredatorBehaviorMode
-from my_boids.predator import Predator
 
 COHESION_FACTOR = 0.005
 SEPARATION = 20
@@ -19,26 +20,17 @@ def cohesion(
     cohesion_factor: float = COHESION_FACTOR,
     visual_range: float = VISUAL_RANGE,
 ):
-    """Move the boid towards the perceived center of mass of the flock"""
+    """Move the boid towards the perceived center of mass of the flock."""
     num_boids = 0
-
-    # Add contribution from each boid in the flock, as long as they are
-    # within the visual range
     sum_positions = pg.Vector2(0, 0)
     for other_boid in boids:
         if other_boid.pos.distance_to(boid.pos) < visual_range:
             sum_positions += other_boid.pos
             num_boids += 1
 
-    # There should at least 2 boids, yourself and another boid
     if num_boids >= 2:
-        # Subract the boid's own position contribution
         sum_positions -= boid.pos
-
-        # Calculate the center of mass
         center_of_mass = sum_positions / (num_boids - 1)
-
-        # Update the boid's velocity
         boid.vel += (center_of_mass - boid.pos) * cohesion_factor
 
 
@@ -48,22 +40,14 @@ def avoid_other_boids(
     separation: float = SEPARATION,
     avoid_factor: float = AVOID_FACTOR,
 ):
-    """Avoid other boids that are too close"""
+    """Avoid other boids that are too close."""
     delta = pg.Vector2(0, 0)
     for other_boid in boids:
-        # Skip checking the boid itself
         if other_boid is boid:
             continue
-
-        # Calculate the distance between the boids
         distance = boid.pos.distance_to(other_boid.pos)
-
-        # If the distance is less than the minimum, apply the avoidance
         if distance < separation:
-            # Calculate the vector to the other boid
             delta += boid.pos - other_boid.pos
-
-    # Apply the vector to the boid
     boid.vel += delta * avoid_factor
 
 
@@ -73,26 +57,17 @@ def match_velocity(
     alignment_factor: float = ALIGNMENT_FACTOR,
     visual_range: float = VISUAL_RANGE,
 ):
-    """Match the velocity of the boid with the velocity of the flock"""
+    """Match the velocity of the boid with the velocity of the flock."""
     num_boids = 0
-
-    # Calculate the average velocity of the flock, as long as they are
-    # within the visual range
     sum_velocity = pg.Vector2(0, 0)
     for other_boid in boids:
         if other_boid.pos.distance_to(boid.pos) < visual_range:
             sum_velocity += other_boid.vel
             num_boids += 1
 
-    # There should at least 2 boids, yourself and another boid
     if num_boids >= 2:
-        # Subract the boid's own velocity contribution
         sum_velocity -= boid.vel
-
-        # Calculate the average velocity of other boids
         average_velocity = sum_velocity / (num_boids - 1)
-
-        # Update the boid's velocity
         boid.vel += (average_velocity - boid.vel) * alignment_factor
 
 
@@ -105,7 +80,7 @@ def flock_rules(
     alignment_factor: float = ALIGNMENT_FACTOR,
     visual_range: float = VISUAL_RANGE,
 ):
-    """Apply all of the flock rules to the boid"""
+    """Apply all flocking rules to the boid."""
     cohesion(boid, boids, cohesion_factor, visual_range)
     avoid_other_boids(boid, boids, separation, avoid_factor)
     match_velocity(boid, boids, alignment_factor, visual_range)
@@ -113,48 +88,26 @@ def flock_rules(
 
 def react_to_predator(
     boid: Boid,
-    predator: Predator,
+    predator_pos: pg.Vector2,
     behavior_mode: PredatorBehaviorMode,
     detection_range: float,
     reaction_strength: float,
 ):
-    """Make the boid react to the predator by either avoiding or being attracted to it.
-
-    Args:
-        boid: The boid to update
-        predator: The predator to react to
-        behavior_mode: Either "avoid" to flee from predator or "attract" to move toward it
-        detection_range: Maximum distance at which boid can detect the predator
-        reaction_strength: Strength of the reaction force
-    """
-    # Calculate distance from boid to predator
-    distance = boid.pos.distance_to(predator.pos)
-
-    # Return early if predator is beyond detection range
+    """Update a boid's velocity based on predator position."""
+    distance = boid.pos.distance_to(predator_pos)
     if distance > detection_range:
         return
 
-    # Handle edge case where boid and predator are at same position
     if distance < 0.1:
-        # Give a small random push to avoid being stuck
-        import random
-
         angle = random.uniform(0, 2 * 3.14159)
         direction = pg.Vector2(1, 0).rotate_rad(angle)
-        force_magnitude = reaction_strength
-        boid.vel += direction * force_magnitude
+        boid.vel += direction * reaction_strength
         return
 
-    # Calculate direction vector
     if behavior_mode == PREDATOR_MODE_AVOID:
-        # Direction away from predator
-        direction = (boid.pos - predator.pos).normalize()
-    else:  # attract
-        # Direction toward predator
-        direction = (predator.pos - boid.pos).normalize()
+        direction = (boid.pos - predator_pos).normalize()
+    else:
+        direction = (predator_pos - boid.pos).normalize()
 
-    # Calculate force using inverse square law (stronger when closer)
     force_magnitude = reaction_strength / (distance + 1) ** 2
-
-    # Apply force to boid velocity
     boid.vel += direction * force_magnitude

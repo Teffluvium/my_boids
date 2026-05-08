@@ -1,15 +1,7 @@
-"""Movement functions and classes for the boids"""
-
-from enum import Enum, auto
+"""Movement functions and classes for the boids."""
 
 from my_boids.boids import Boid
-
-
-class BoundaryType(Enum):
-    """Enum for boid behavior when they hit the boundary"""
-
-    BOUNCE = auto()
-    WRAP = auto()
+from my_boids.options import BoundaryType
 
 
 def boid_vs_boundary(
@@ -19,20 +11,9 @@ def boid_vs_boundary(
     margin: int = 30,
     turn_factor: float = 1,
 ) -> None:
-    """Adjust the boid's position and velocity to keep it within the window.
-    The "type" of adjustment is determined by the boundary_type parameter.
-
-    Args:
-        boid (Boid): Its a Boid
-        boundary_type (BoundaryType): What to do when the boid hits the edge
-        window_size (Tuple[int, int]): Window size in pixels
-    """
-    # Select the boundary type and adjust the boid's position and/or velocity
+    """Adjust boid position or velocity based on configured boundary behavior."""
     if boundary_type == BoundaryType.WRAP:
-        wrap_around_screen(
-            boid,
-            window_size,
-        )
+        wrap_around_screen(boid, window_size)
     elif boundary_type == BoundaryType.BOUNCE:
         keep_within_bounds(
             boid,
@@ -43,15 +24,7 @@ def boid_vs_boundary(
 
 
 def wrap_around_screen(boid: Boid, window_size: tuple[int, int]) -> None:
-    """Wrap boid around to opposite side of the window.
-
-    Note: This function compares the postion of the boid to the window size
-        and adjusts the position, leaving the velocity unchanged.
-
-    Args:
-        boid (Boid): Its a Boid
-        window_size (Tuple[int, int]): Window size in pixels
-    """
+    """Wrap boid around to opposite side of the window."""
     boid.pos.update(
         boid.pos[0] % window_size[0],
         boid.pos[1] % window_size[1],
@@ -64,33 +37,13 @@ def keep_within_bounds(
     margin: int = 30,
     turn_factor: float = 1,
 ) -> None:
-    """Adjust the boid's velocity to keep it within the window.
+    """Adjust boid velocity to keep it within the window."""
+    if boid.pos.x < margin:
+        boid.vel.x += turn_factor
+    elif boid.pos.x > window_size[0] - margin:
+        boid.vel.x -= turn_factor
 
-    Note: This function compares the postion of the boid to the window size
-        and adjusts the velocity, leaving the position unchanged.
-
-    Args:
-        boid (Boid): Its a Boid
-        window_size (Tuple[int, int]): Window size in pixels
-        margin (int, optional): Buffer of pixels from the edges of the
-            window. Defaults to 30.
-        turn_factor (float, optional): Adjust the velocity by this factor.
-            Defaults to 1.
-    """
-
-    def adjust_vel(pos: float, vel: float, window_size: int) -> float:
-        """Adjust velocity component to keep boid within bounds"""
-        if pos < margin:
-            vel += turn_factor
-        elif pos > window_size - margin:
-            vel -= turn_factor
-
-        return vel
-
-    # Calculate the new velocity
-    vel = [0.0, 0.0]
-    vel[0] = adjust_vel(boid.pos[0], boid.vel[0], window_size[0])
-    vel[1] = adjust_vel(boid.pos[1], boid.vel[1], window_size[1])
-
-    # Update the boid's velocity
-    boid.vel.update(vel)
+    if boid.pos.y < margin:
+        boid.vel.y += turn_factor
+    elif boid.pos.y > window_size[1] - margin:
+        boid.vel.y -= turn_factor
