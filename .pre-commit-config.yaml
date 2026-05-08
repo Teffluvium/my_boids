@@ -17,7 +17,6 @@ repos:
         additional_dependencies:
           - numpy>=2.2.1
           - pydantic>=2.0
-          - pygame>=2.6.1
           - pygame-gui>=0.6.0
           - pytest>=8.3.5
         args: [--config-file=pyproject.toml]
