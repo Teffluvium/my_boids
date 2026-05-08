@@ -8,6 +8,7 @@ from my_boids.game import Game
 from my_boids.options import (
     PREDATOR_ATTACK_CENTER,
     PREDATOR_ATTACK_ISOLATED,
+    PREDATOR_ATTACK_MOUSE,
     PREDATOR_ATTACK_NEAREST,
     PREDATOR_MODE_AVOID,
     BoidOptions,
@@ -188,6 +189,14 @@ def test_get_predator_target_isolated_strategy(game):
     game.boid_opts.predator_attack_strategy = PREDATOR_ATTACK_ISOLATED
 
     assert game._get_predator_target() == pg.Vector2(400, 400)
+
+
+def test_get_predator_target_mouse_strategy(game, monkeypatch):
+    """Mouse strategy targets the current mouse position."""
+    game.boid_opts.predator_attack_strategy = PREDATOR_ATTACK_MOUSE
+    monkeypatch.setattr(pg.mouse, "get_pos", lambda: (123, 456))
+
+    assert game._get_predator_target() == pg.Vector2(123, 456)
 
 
 # ---------------------------------------------------------------------------

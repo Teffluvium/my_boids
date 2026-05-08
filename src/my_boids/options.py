@@ -16,7 +16,8 @@ PREDATOR_BEHAVIOR_MODES: tuple[PredatorBehaviorMode, PredatorBehaviorMode] = (
     PREDATOR_MODE_AVOID,
     PREDATOR_MODE_ATTRACT,
 )
-PredatorAttackStrategy = Literal["center", "nearest", "isolated"]
+PredatorAttackStrategy = Literal["mouse", "center", "nearest", "isolated"]
+PREDATOR_ATTACK_MOUSE: PredatorAttackStrategy = "mouse"
 PREDATOR_ATTACK_CENTER: PredatorAttackStrategy = "center"
 PREDATOR_ATTACK_NEAREST: PredatorAttackStrategy = "nearest"
 PREDATOR_ATTACK_ISOLATED: PredatorAttackStrategy = "isolated"
@@ -24,7 +25,9 @@ PREDATOR_ATTACK_STRATEGIES: tuple[
     PredatorAttackStrategy,
     PredatorAttackStrategy,
     PredatorAttackStrategy,
+    PredatorAttackStrategy,
 ] = (
+    PREDATOR_ATTACK_MOUSE,
     PREDATOR_ATTACK_CENTER,
     PREDATOR_ATTACK_NEAREST,
     PREDATOR_ATTACK_ISOLATED,
@@ -102,7 +105,7 @@ class BoidOptions(BaseModel):
     alignment_factor: float = Field(default=0.05, ge=0.01, le=0.2)
     visual_range: int = Field(default=40, ge=20, le=100)
     predator_behavior_mode: PredatorBehaviorMode = Field(default=PREDATOR_MODE_AVOID)
-    predator_attack_strategy: PredatorAttackStrategy = Field(default=PREDATOR_ATTACK_CENTER)
+    predator_attack_strategy: PredatorAttackStrategy = Field(default=PREDATOR_ATTACK_MOUSE)
     predator_detection_range: float = Field(default=400.0, ge=100.0, le=600.0)
     predator_reaction_strength: float = Field(default=0.5, ge=0.1, le=2.0)
 

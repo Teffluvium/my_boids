@@ -209,9 +209,9 @@ Adjust the `[boid]` parameters at in the file `config.ini` to modify the boid be
 - Predator reaction mode. Use `avoid` for fleeing behaviour or `attract` to make boids chase the predator
     \
     `predator_behavior_mode = avoid`
-- Predator attack strategy. Use `center`, `nearest`, or `isolated` to steer the automated predator toward the flock center, closest boid, or most isolated boid
+- Predator attack strategy. Use `mouse`, `center`, `nearest`, or `isolated` to steer the predator with the mouse cursor or target the flock center, closest boid, or most isolated boid
     \
-    `predator_attack_strategy = center`
+    `predator_attack_strategy = mouse`
 - Distance at which boids react to the predator
     \
     `predator_detection_range = 400.0`

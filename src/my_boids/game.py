@@ -7,6 +7,7 @@ from my_boids.flock_rules import flock_rules, react_to_predator
 from my_boids.options import (
     PREDATOR_ATTACK_CENTER,
     PREDATOR_ATTACK_ISOLATED,
+    PREDATOR_ATTACK_MOUSE,
     PREDATOR_MODE_ATTRACT,
     PREDATOR_MODE_AVOID,
     BoidOptions,
@@ -223,6 +224,9 @@ class Game:
 
     def _get_predator_target(self) -> pg.Vector2:
         """Return the predator target for the configured attack strategy."""
+        if self.boid_opts.predator_attack_strategy == PREDATOR_ATTACK_MOUSE:
+            return pg.Vector2(pg.mouse.get_pos())
+
         if len(self.boid_list) == 0:
             return pg.Vector2(self.predator.pos)
 
@@ -373,6 +377,7 @@ class Game:
         """
         font = pg.font.SysFont("serif", 25)
         strategy_labels = {
+            "mouse": "Mouse Cursor",
             "center": "Flock Center",
             "nearest": "Nearest Bird",
             "isolated": "Most Isolated Bird",
