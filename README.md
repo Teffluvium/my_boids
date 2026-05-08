@@ -206,6 +206,18 @@ Adjust the `[boid]` parameters at in the file `config.ini` to modify the boid be
 - Radius of boids vision.  Boids will not interact with other boids that exceed this radius
     \
     `visual_range = 50`
+- Predator reaction mode. Use `avoid` for fleeing behaviour or `attract` to make boids chase the predator
+    \
+    `predator_behavior_mode = avoid`
+- Predator attack strategy. Use `center`, `nearest`, or `isolated` to steer the automated predator toward the flock center, closest boid, or most isolated boid
+    \
+    `predator_attack_strategy = center`
+- Distance at which boids react to the predator
+    \
+    `predator_detection_range = 400.0`
+- Strength of the boids' reaction to the predator
+    \
+    `predator_reaction_strength = 0.5`
 
 ## Additional References for Boids
 

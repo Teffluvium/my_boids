@@ -36,6 +36,7 @@ from pygame_gui.elements import (
 )
 
 from my_boids.options import (
+    PREDATOR_ATTACK_STRATEGIES,
     PREDATOR_BEHAVIOR_MODES,
     BoidOptions,
     ScreenOptions,
@@ -125,6 +126,7 @@ class SettingsDialog:
         self._sliders: dict[str, UIHorizontalSlider] = {}
         self._texts: dict[str, UITextEntryLine] = {}
         self._predator_dd: UIDropDownMenu | None = None
+        self._attack_strategy_dd: UIDropDownMenu | None = None
 
         # Buttons
         self._save_btn: UIButton | None = None
@@ -237,8 +239,8 @@ class SettingsDialog:
         # Scrollable container for boid controls
         btn_area_h = _ROW_H + 2 * _PAD  # bottom button bar height
         error_area_h = _SEC_H + _PAD  # error label space
-        predator_row_h = _ROW_H + _PAD  # predator dropdown row below scroll
-        scroll_h = _DH - cy - btn_area_h - error_area_h - predator_row_h - 2 * _PAD
+        predator_rows_h = 2 * (_ROW_H + _PAD)  # dropdown rows below scroll
+        scroll_h = _DH - cy - btn_area_h - error_area_h - predator_rows_h - 2 * _PAD
         scroll_inner_h = len(_BOID_FIELDS) * _ROW_H
 
         self._scroll = UIScrollingContainer(
@@ -262,6 +264,21 @@ class SettingsDialog:
         self._predator_dd = UIDropDownMenu(
             options_list=list(PREDATOR_BEHAVIOR_MODES),
             starting_option=self._game.boid_opts.predator_behavior_mode,
+            relative_rect=pg.Rect(_PAD + _LBL_W + _PAD, cy, _SLD_W + _PAD + _TXT_W, _ROW_H),
+            manager=self._manager,
+            container=self._panel,
+        )
+        cy += _ROW_H + _PAD
+
+        UILabel(
+            relative_rect=pg.Rect(_PAD, cy, _LBL_W, _ROW_H),
+            text="Predator Attack",
+            manager=self._manager,
+            container=self._panel,
+        )
+        self._attack_strategy_dd = UIDropDownMenu(
+            options_list=list(PREDATOR_ATTACK_STRATEGIES),
+            starting_option=self._game.boid_opts.predator_attack_strategy,
             relative_rect=pg.Rect(_PAD + _LBL_W + _PAD, cy, _SLD_W + _PAD + _TXT_W, _ROW_H),
             manager=self._manager,
             container=self._panel,
@@ -367,6 +384,7 @@ class SettingsDialog:
         self._sliders.clear()
         self._texts.clear()
         self._predator_dd = None
+        self._attack_strategy_dd = None
         self._save_btn = None
         self._cancel_btn = None
         self._reset_btn = None
@@ -395,6 +413,17 @@ class SettingsDialog:
                 self._predator_dd = UIDropDownMenu(
                     options_list=list(PREDATOR_BEHAVIOR_MODES),
                     starting_option=boid_opts.predator_behavior_mode,
+                    relative_rect=old_rect,
+                    manager=self._manager,
+                    container=self._panel,
+                )
+
+            if self._attack_strategy_dd is not None:
+                old_rect = self._attack_strategy_dd.relative_rect.copy()
+                self._attack_strategy_dd.kill()
+                self._attack_strategy_dd = UIDropDownMenu(
+                    options_list=list(PREDATOR_ATTACK_STRATEGIES),
+                    starting_option=boid_opts.predator_attack_strategy,
                     relative_rect=old_rect,
                     manager=self._manager,
                     container=self._panel,
@@ -458,6 +487,10 @@ class SettingsDialog:
             raw_dd = self._predator_dd.selected_option
             values["predator_behavior_mode"] = raw_dd[0] if isinstance(raw_dd, tuple) else raw_dd
 
+        if self._attack_strategy_dd is not None:
+            raw_dd = self._attack_strategy_dd.selected_option
+            values["predator_attack_strategy"] = raw_dd[0] if isinstance(raw_dd, tuple) else raw_dd
+
         return values
 
     def _handle_save(self) -> None:
@@ -516,6 +549,7 @@ class SettingsDialog:
             "alignment_factor": str(opts.alignment_factor),
             "visual_range": str(opts.visual_range),
             "predator_behavior_mode": opts.predator_behavior_mode,
+            "predator_attack_strategy": opts.predator_attack_strategy,
             "predator_detection_range": str(opts.predator_detection_range),
             "predator_reaction_strength": str(opts.predator_reaction_strength),
         }
@@ -534,10 +568,10 @@ class SettingsDialog:
                     trailing = match.group(4)
                     line_ending = match.group(5)
                     comment_match = re.match(r"^(.*?)(\s+[;#].*)?$", trailing)
-                    new_lines.append(
-                        f"{indent}{key}{sep}{updates[key]}"
-                        f"{comment_match.group(2) if comment_match else ''}{line_ending}"
-                    )
+                    comment_text = ""
+                    if comment_match is not None and comment_match.group(2) is not None:
+                        comment_text = comment_match.group(2)
+                    new_lines.append(f"{indent}{key}{sep}{updates[key]}{comment_text}{line_ending}")
                     continue
             new_lines.append(line)
 

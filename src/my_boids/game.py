@@ -365,6 +365,29 @@ class Game:
         text_rect.topleft = (10, 10)
         screen.blit(text, text_rect)
 
+    def display_predator_attack_strategy(self, screen: pg.Surface):
+        """Display the current predator attack strategy to the screen.
+
+        Args:
+            screen (pg.Surface): Screen on which to draw the text.
+        """
+        font = pg.font.SysFont("serif", 25)
+        strategy_labels = {
+            "center": "Flock Center",
+            "nearest": "Nearest Bird",
+            "isolated": "Most Isolated Bird",
+        }
+        strategy = self.boid_opts.predator_attack_strategy
+        strategy_text = strategy_labels.get(strategy, strategy.replace("_", " ").title())
+        text = font.render(
+            f"Predator Attack: {strategy_text}",
+            True,
+            pg.Color("white"),
+        )
+        text_rect = text.get_rect()
+        text_rect.topleft = (10, 38)
+        screen.blit(text, text_rect)
+
     def display_game_over_text(self, screen: pg.Surface):
         """Display "Game Over" text to the screen.
 
@@ -445,6 +468,7 @@ class Game:
             self.all_sprites_list.draw(screen)
             self.display_score(screen)
             self.display_predator_mode(screen)
+            self.display_predator_attack_strategy(screen)
 
             # Display performance metrics if enabled
             if self.show_metrics:

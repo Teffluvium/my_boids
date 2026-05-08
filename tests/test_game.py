@@ -256,6 +256,28 @@ def test_display_score_after_increment(game, pygame_display):
     game.display_score(pygame_display)
 
 
+def test_display_predator_attack_strategy(game, pygame_display):
+    """display_predator_attack_strategy renders without error."""
+    game.display_predator_attack_strategy(pygame_display)
+
+
+def test_display_predator_attack_strategy_uses_friendly_label(game, pygame_display, monkeypatch):
+    """HUD shows a human-friendly predator attack strategy name."""
+    captured_text: list[str] = []
+
+    class FakeFont:
+        def render(self, text, antialias, color):
+            captured_text.append(text)
+            return pg.Surface((1, 1))
+
+    game.boid_opts.predator_attack_strategy = PREDATOR_ATTACK_CENTER
+    monkeypatch.setattr(pg.font, "SysFont", lambda *args, **kwargs: FakeFont())
+
+    game.display_predator_attack_strategy(pygame_display)
+
+    assert captured_text == ["Predator Attack: Flock Center"]
+
+
 def test_display_game_over_text(game, pygame_display):
     """display_game_over_text renders to the surface without error"""
     game.display_game_over_text(pygame_display)
