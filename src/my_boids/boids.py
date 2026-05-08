@@ -29,8 +29,8 @@ class Boid(pg.sprite.Sprite):
 
         ## Validate parameters
         # Ensure that position and velocity are Vector2 objects
-        self.pos = pos if isinstance(pos, pg.Vector2) else pg.Vector2(pos)
-        self.vel = vel if isinstance(vel, pg.Vector2) else pg.Vector2(vel)
+        self.pos: pg.Vector2 = pos if isinstance(pos, pg.Vector2) else pg.Vector2(pos)
+        self.vel: pg.Vector2 = vel if isinstance(vel, pg.Vector2) else pg.Vector2(vel)
 
         # Ensure color is a tuple and has 3 or 4 elements
         self.color = color if isinstance(color, pg.Color) else pg.Color(color)
@@ -53,7 +53,7 @@ class Boid(pg.sprite.Sprite):
         pg.draw.ellipse(self.image, color, [0, 0, width, height])
 
         # Get a rectangle object that represents the size of the image
-        self.rect = self.image.get_rect()
+        self.rect: pg.Rect = self.image.get_rect()
         self.rect.center = self.pos.xy  # type: ignore[assignment]
 
     def update(self):

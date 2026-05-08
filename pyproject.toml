@@ -4,7 +4,11 @@ version = "0.1.0"
 description = "Python implementation of Boids using PyGame for visualization"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = ["numpy>=2.2.1", "pygame>=2.6.1"]
+dependencies = [
+    "numpy>=2.2.1",
+    "pydantic>=2.0",
+    "pygame-gui>=0.6.0",
+]
 
 [project.scripts]
 my-boids = "my_boids.boids_sim:main"

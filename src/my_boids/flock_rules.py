@@ -3,6 +3,7 @@
 import pygame as pg
 
 from my_boids.boids import Boid
+from my_boids.options import PREDATOR_MODE_AVOID, PredatorBehaviorMode
 from my_boids.predator import Predator
 
 COHESION_FACTOR = 0.005
@@ -113,7 +114,7 @@ def flock_rules(
 def react_to_predator(
     boid: Boid,
     predator: Predator,
-    behavior_mode: str,
+    behavior_mode: PredatorBehaviorMode,
     detection_range: float,
     reaction_strength: float,
 ):
@@ -145,7 +146,7 @@ def react_to_predator(
         return
 
     # Calculate direction vector
-    if behavior_mode == "avoid":
+    if behavior_mode == PREDATOR_MODE_AVOID:
         # Direction away from predator
         direction = (boid.pos - predator.pos).normalize()
     else:  # attract
