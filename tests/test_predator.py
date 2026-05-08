@@ -128,3 +128,13 @@ def test_predator_update_no_move_when_at_mouse(pygame_display):
     predator = Predator(pos=pg.Vector2(0, 0))
     predator.update()
     assert predator.pos == pg.Vector2(0, 0)
+
+
+def test_predator_update_moves_toward_explicit_target(pygame_display):
+    """Predator.update accepts an explicit target position."""
+    predator = Predator(pos=pg.Vector2(100, 100))
+
+    predator.update(target_pos=pg.Vector2(200, 100))
+
+    assert predator.pos == pg.Vector2(105, 100)
+    assert predator.vel == pg.Vector2(5, 0)

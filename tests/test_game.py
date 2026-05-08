@@ -5,7 +5,14 @@ import pytest
 
 from my_boids.boid_vs_boundary import BoundaryType
 from my_boids.game import Game
-from my_boids.options import PREDATOR_MODE_AVOID, BoidOptions, ScreenOptions
+from my_boids.options import (
+    PREDATOR_ATTACK_CENTER,
+    PREDATOR_ATTACK_ISOLATED,
+    PREDATOR_ATTACK_NEAREST,
+    PREDATOR_MODE_AVOID,
+    BoidOptions,
+    ScreenOptions,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
@@ -33,6 +40,7 @@ def fixture_game(pygame_display):
         alignment_factor=0.01,
         visual_range=100,
         predator_behavior_mode=PREDATOR_MODE_AVOID,
+        predator_attack_strategy=PREDATOR_ATTACK_CENTER,
         predator_detection_range=400.0,
         predator_reaction_strength=0.5,
     )
@@ -61,6 +69,7 @@ def fixture_game_with_spatial_grid(pygame_display):
         alignment_factor=0.01,
         visual_range=100,
         predator_behavior_mode=PREDATOR_MODE_AVOID,
+        predator_attack_strategy=PREDATOR_ATTACK_CENTER,
         predator_detection_range=400.0,
         predator_reaction_strength=0.5,
     )
@@ -145,6 +154,40 @@ def test_score_increments_on_collision(game):
     score_before = game.score
     game.run_logic()
     assert game.score > score_before
+
+
+def test_get_predator_target_center_strategy(game):
+    """Center strategy targets the centroid of the remaining flock."""
+    positions = [(100, 100), (200, 100), (300, 200)]
+    for boid, (x_pos, y_pos) in zip(game.boid_list, positions, strict=False):
+        boid.pos = pg.Vector2(x_pos, y_pos)
+
+    game.boid_opts.predator_attack_strategy = PREDATOR_ATTACK_CENTER
+
+    assert game._get_predator_target() == pg.Vector2(200, 400 / 3)
+
+
+def test_get_predator_target_nearest_strategy(game):
+    """Nearest strategy targets the boid closest to the predator."""
+    game.predator.pos = pg.Vector2(10, 10)
+    positions = [(100, 100), (30, 20), (300, 200)]
+    for boid, (x_pos, y_pos) in zip(game.boid_list, positions, strict=False):
+        boid.pos = pg.Vector2(x_pos, y_pos)
+
+    game.boid_opts.predator_attack_strategy = PREDATOR_ATTACK_NEAREST
+
+    assert game._get_predator_target() == pg.Vector2(30, 20)
+
+
+def test_get_predator_target_isolated_strategy(game):
+    """Isolated strategy targets the boid farthest from its nearest neighbour."""
+    positions = [(100, 100), (110, 100), (400, 400)]
+    for boid, (x_pos, y_pos) in zip(game.boid_list, positions, strict=False):
+        boid.pos = pg.Vector2(x_pos, y_pos)
+
+    game.boid_opts.predator_attack_strategy = PREDATOR_ATTACK_ISOLATED
+
+    assert game._get_predator_target() == pg.Vector2(400, 400)
 
 
 # ---------------------------------------------------------------------------

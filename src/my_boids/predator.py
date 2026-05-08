@@ -51,14 +51,15 @@ class Predator(pg.sprite.Sprite):
         )
         return surface
 
-    def update(self):
+    def update(self, target_pos: pg.Vector2 | None = None):
         """Update the predator location."""
         # Store the old position
         self.prev_pos = self.pos
 
-        # Aim at the mouse
-        mouse_pos = pg.Vector2(pg.mouse.get_pos())
-        new_pos, self.vel = move_to(self.pos, mouse_pos, desired_speed=5)
+        if target_pos is None:
+            target_pos = pg.Vector2(pg.mouse.get_pos())
+
+        new_pos, self.vel = move_to(self.pos, target_pos, desired_speed=5)
 
         if new_pos is not None:
             self.pos = new_pos

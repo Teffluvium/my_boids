@@ -4,7 +4,14 @@ import pygame as pg
 from my_boids.boid_vs_boundary import boid_vs_boundary
 from my_boids.boids import Boid
 from my_boids.flock_rules import flock_rules, react_to_predator
-from my_boids.options import PREDATOR_MODE_ATTRACT, PREDATOR_MODE_AVOID, BoidOptions, ScreenOptions
+from my_boids.options import (
+    PREDATOR_ATTACK_CENTER,
+    PREDATOR_ATTACK_ISOLATED,
+    PREDATOR_MODE_ATTRACT,
+    PREDATOR_MODE_AVOID,
+    BoidOptions,
+    ScreenOptions,
+)
 from my_boids.performance import PerformanceMonitor
 from my_boids.predator import Predator
 from my_boids.spatial_grid import SpatialGrid
@@ -211,7 +218,39 @@ class Game:
 
     def _update_sprites(self) -> None:
         """Update positions of all sprites."""
-        self.all_sprites_list.update()
+        self.boid_list.update()
+        self.predator.update(self._get_predator_target())
+
+    def _get_predator_target(self) -> pg.Vector2:
+        """Return the predator target for the configured attack strategy."""
+        if len(self.boid_list) == 0:
+            return pg.Vector2(self.predator.pos)
+
+        strategy = self.boid_opts.predator_attack_strategy
+        boids = list(self.boid_list)
+
+        if strategy == PREDATOR_ATTACK_CENTER:
+            total = pg.Vector2(0, 0)
+            for boid in boids:
+                total += boid.pos
+            return total / len(boids)
+
+        if strategy == PREDATOR_ATTACK_ISOLATED:
+            if len(boids) == 1:
+                return pg.Vector2(boids[0].pos)
+
+            def nearest_neighbor_distance(target_boid: Boid) -> float:
+                return min(
+                    target_boid.pos.distance_to(other_boid.pos)
+                    for other_boid in boids
+                    if other_boid is not target_boid
+                )
+
+            isolated_boid = max(boids, key=nearest_neighbor_distance)
+            return pg.Vector2(isolated_boid.pos)
+
+        nearest_boid = min(boids, key=lambda boid: self.predator.pos.distance_to(boid.pos))
+        return pg.Vector2(nearest_boid.pos)
 
     def _apply_boid_movement_rules(self, boid: Boid) -> None:
         """Apply all movement rules to a single boid.
