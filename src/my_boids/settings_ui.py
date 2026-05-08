@@ -534,9 +534,9 @@ class SettingsDialog:
                     trailing = match.group(4)
                     line_ending = match.group(5)
                     comment_match = re.match(r"^(.*?)(\s+[;#].*)?$", trailing)
-                    comment = comment_match.group(2) or ""
                     new_lines.append(
-                        f"{indent}{key}{sep}{updates[key]}{comment}{line_ending}"
+                        f"{indent}{key}{sep}{updates[key]}"
+                        f"{comment_match.group(2) if comment_match else ''}{line_ending}"
                     )
                     continue
             new_lines.append(line)
