@@ -203,7 +203,7 @@ class SettingsDialog:
         )
         self._predator_dd = UIDropDownMenu(
             options_list=list(PREDATOR_BEHAVIOR_MODES),
-            starting_option=self._game.predator_opts.predator_behavior_mode,
+            starting_option=self._game.boid_opts.boid_avoid_mode,
             relative_rect=pg.Rect(_PAD + _LBL_W + _PAD, cy, _SLD_W + _PAD + _TXT_W, _ROW_H),
             manager=self._manager,
             container=self._panel,
@@ -392,7 +392,7 @@ class SettingsDialog:
                 self._predator_dd.kill()
                 self._predator_dd = UIDropDownMenu(
                     options_list=list(PREDATOR_BEHAVIOR_MODES),
-                    starting_option=predator_opts.predator_behavior_mode,
+                    starting_option=boid_opts.boid_avoid_mode,
                     relative_rect=old_rect,
                     manager=self._manager,
                     container=self._panel,
@@ -486,6 +486,10 @@ class SettingsDialog:
                 values[field_name] = float(raw)
             except ValueError:
                 values[field_name] = raw
+
+        if self._predator_dd is not None:
+            raw_dd = self._predator_dd.selected_option
+            values["boid_avoid_mode"] = raw_dd[0] if isinstance(raw_dd, tuple) else raw_dd
         return values
 
     def _collect_predator_values(self) -> dict[str, object]:
@@ -497,9 +501,6 @@ class SettingsDialog:
             except ValueError:
                 values[field_name] = raw
 
-        if self._predator_dd is not None:
-            raw_dd = self._predator_dd.selected_option
-            values["predator_behavior_mode"] = raw_dd[0] if isinstance(raw_dd, tuple) else raw_dd
         if self._attack_strategy_dd is not None:
             raw_dd = self._attack_strategy_dd.selected_option
             values["predator_attack_mode"] = raw_dd[0] if isinstance(raw_dd, tuple) else raw_dd
@@ -531,9 +532,9 @@ class SettingsDialog:
                     "avoid_factor": str(validated_boids.avoid_factor),
                     "alignment_factor": str(validated_boids.alignment_factor),
                     "visual_range": str(validated_boids.visual_range),
+                    "boid_avoid_mode": validated_boids.boid_avoid_mode,
                 },
                 "predator": {
-                    "predator_behavior_mode": validated_predator.predator_behavior_mode,
                     "predator_attack_mode": validated_predator.predator_attack_mode,
                     "predator_detection_range": str(validated_predator.predator_detection_range),
                     "predator_reaction_strength": str(

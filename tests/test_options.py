@@ -8,6 +8,7 @@ from my_boids.options import (
     PREDATOR_ATTACK_MODE_CENTER,
     PREDATOR_ATTACK_MODE_MOUSE,
     PREDATOR_ATTACK_MODE_NEAREST,
+    PREDATOR_MODE_AVOID,
     BoidOptions,
     BoundaryType,
     PredatorOptions,
@@ -80,6 +81,24 @@ def test_boid_options_visual_range():
     """BoidOptions reads visual_range from config"""
     opts = BoidOptions.from_config()
     assert opts.visual_range == 40
+
+
+def test_boid_options_avoid_mode():
+    """BoidOptions reads boid_avoid_mode from config."""
+    opts = BoidOptions.from_config()
+    assert opts.boid_avoid_mode == PREDATOR_MODE_AVOID
+
+
+def test_boid_options_avoid_mode_legacy_fallback(tmp_path: Path):
+    """Legacy predator_behavior_mode in [boids] remains supported."""
+    config_path = tmp_path / "config.ini"
+    config_path.write_text("[boids]\npredator_behavior_mode = attract\n")
+    load_config.cache_clear()
+
+    opts = BoidOptions.from_config(str(config_path))
+
+    assert opts.boid_avoid_mode == "attract"
+    load_config.cache_clear()
 
 
 def test_predator_options_attack_mode():
