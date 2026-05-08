@@ -168,6 +168,7 @@ class Game:
         if new_opts.size != old_size:
             for boid in self.boid_list:
                 s = new_opts.size
+                boid.size = s
                 boid.image = pg.Surface([s, s])
                 boid.image.fill(pg.Color("black"))
                 boid.image.set_colorkey(pg.Color("black"))
