@@ -1,5 +1,40 @@
 # Performance Optimization Analysis
 
+## Replaceable Algorithm Verification (2026-10-28)
+
+Issue #40 adds replaceable sequential flocking algorithms while retaining the
+classic formulas. Scan mode now filters the declared neighborhood once before
+the three classic rules, instead of having each rule traverse the entire flock.
+Grid mode continues to query exact local neighbors in supplied flock order.
+
+| Starting Boids | Full Scan Before (ms) | Full Scan After (ms) | Grid Before (ms) | Grid After (ms) |
+|----------------|-----------------------|----------------------|------------------|-----------------|
+| 100 | 1.693 | 0.738 | 0.624 | 0.633 |
+| 200 | 7.158 | 2.751 | 1.540 | 1.557 |
+
+These are medians of three interleaved before/after runs of the existing
+`benchmark_simulation` harness, 120 frames per run, on macOS with Python 3.12.11
+and pygame-ce 2.5.7. Both Python's random state and the game's NumPy generator
+were reset to seed 40 before every run. Display and audio used SDL dummy drivers;
+the harness used its 800x600 bounce boundary, 40-pixel visual range, default
+predator settings, and no rendering. Populations are starting counts because
+collisions can remove members. The original stepper was loaded from the
+pre-refactor Git revision into an in-memory module; no working files were
+replaced to obtain baseline measurements.
+
+The short runs show substantially less scan work and approximately 1-2% higher
+grid timings. They are smoke measurements, not statistically significant
+performance guarantees. Whole-flock algorithms intentionally bypass spatial
+pruning; bounded grid algorithms do not scan the full population per query.
+Earlier runs that reset only Python's RNG were not a controlled comparison
+and are excluded from this table.
+
+Verification: 271 tests passed and one skipped; repository Ruff lint, changed-file
+format checks, and mypy passed. Coverage includes classic numerical outcomes,
+strict thresholds, custom algorithm tuning, exact neighborhoods across backends,
+invalid/zero/whole-flock radii, live options, sequential wraps, and multiframe
+backend parity. Public mathematical rule tests remain supported.
+
 ## FlockStepper Verification (2026-10-27)
 
 Issue #36 moves rule orchestration and neighbor-index maintenance behind
