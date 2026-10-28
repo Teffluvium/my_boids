@@ -1,11 +1,13 @@
 """Define rules for boid behavior in a flock."""
 
 import random
+from collections.abc import Sequence
+from typing import Protocol
 
 import pygame as pg
 
 from my_boids.boids import Boid
-from my_boids.options import BOID_AVOID_MODE_AVOID, BoidAvoidMode
+from my_boids.options import BOID_AVOID_MODE_AVOID, BoidAvoidMode, BoidOptions
 
 COHESION_FACTOR = 0.005
 SEPARATION = 20
@@ -16,7 +18,7 @@ VISUAL_RANGE = 100
 
 def cohesion(
     boid: Boid,
-    boids: list[Boid],
+    boids: Sequence[Boid],
     cohesion_factor: float = COHESION_FACTOR,
     visual_range: float = VISUAL_RANGE,
 ):
@@ -36,7 +38,7 @@ def cohesion(
 
 def avoid_other_boids(
     boid: Boid,
-    boids: list[Boid],
+    boids: Sequence[Boid],
     separation: float = SEPARATION,
     avoid_factor: float = AVOID_FACTOR,
 ):
@@ -53,7 +55,7 @@ def avoid_other_boids(
 
 def match_velocity(
     boid: Boid,
-    boids: list[Boid],
+    boids: Sequence[Boid],
     alignment_factor: float = ALIGNMENT_FACTOR,
     visual_range: float = VISUAL_RANGE,
 ):
@@ -73,7 +75,7 @@ def match_velocity(
 
 def flock_rules(
     boid: Boid,
-    boids: list[Boid],
+    boids: Sequence[Boid],
     cohesion_factor: float = COHESION_FACTOR,
     separation: float = SEPARATION,
     avoid_factor: float = AVOID_FACTOR,
@@ -84,6 +86,64 @@ def flock_rules(
     cohesion(boid, boids, cohesion_factor, visual_range)
     avoid_other_boids(boid, boids, separation, avoid_factor)
     match_velocity(boid, boids, alignment_factor, visual_range)
+
+
+class FlockingAlgorithm(Protocol):
+    """Sequential flocking that may mutate only the subject boid's velocity.
+
+    Do not move boids, modify neighbors, options or membership, or retain supplied
+    neighborhoods. Later calls observe earlier velocity updates and boundary
+    wraps; no frame-wide snapshot is supplied.
+    """
+
+    def neighbor_radius(self, options: BoidOptions) -> float | None:
+        """Return a finite nonnegative radius, or None for the whole flock.
+
+        Called once per pass with current options, before any boid is mutated.
+        The radius must cover all interactions for that pass. Invalid radii
+        raise ValueError in the stepper; this method must not mutate options.
+        """
+        ...
+
+    def apply_to_boid(
+        self,
+        boid: Boid,
+        neighbors: Sequence[Boid],
+        *,
+        options: BoidOptions,
+    ) -> None:
+        """Apply flocking to current neighbors in supplied flock order.
+
+        Neighbors include self and all members at distance <= the declared
+        radius, or the whole flock for None. Apply exact rule thresholds here.
+        """
+        ...
+
+
+class ClassicFlocking:
+    """Compose the existing rules using the current pass's options."""
+
+    def neighbor_radius(self, options: BoidOptions) -> float:
+        """Cover both visual and separation interactions."""
+        return max(float(options.visual_range), options.separation)
+
+    def apply_to_boid(
+        self,
+        boid: Boid,
+        neighbors: Sequence[Boid],
+        *,
+        options: BoidOptions,
+    ) -> None:
+        """Apply cohesion, separation, then alignment without changing formulas."""
+        flock_rules(
+            boid,
+            neighbors,
+            cohesion_factor=options.cohesion_factor,
+            separation=options.separation,
+            avoid_factor=options.avoid_factor,
+            alignment_factor=options.alignment_factor,
+            visual_range=float(options.visual_range),
+        )
 
 
 def react_to_predator(

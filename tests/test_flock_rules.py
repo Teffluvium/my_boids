@@ -1,7 +1,15 @@
 import pygame as pg
 import pytest
 
-from my_boids.flock_rules import avoid_other_boids, cohesion, flock_rules, match_velocity
+from my_boids.flock_rules import (
+    ClassicFlocking,
+    FlockingAlgorithm,
+    avoid_other_boids,
+    cohesion,
+    flock_rules,
+    match_velocity,
+)
+from my_boids.options import BoidOptions
 
 
 @pytest.mark.parametrize(
@@ -69,3 +77,22 @@ def test_boid_flock_rules(boid_list):
         visual_range=100,
     )
     assert boid.vel == pg.Vector2(0, 5)
+
+
+def test_classic_flocking_maps_current_options(boid_list):
+    algorithm: FlockingAlgorithm = ClassicFlocking()
+    options = BoidOptions(
+        cohesion_factor=0.1,
+        separation=20,
+        alignment_factor=0.2,
+        avoid_factor=0.1,
+        visual_range=100,
+    )
+
+    assert algorithm.neighbor_radius(options) == 100
+    algorithm.apply_to_boid(boid_list[0], tuple(boid_list), options=options)
+    assert tuple(boid_list[0].vel) == pytest.approx((0, 0.2))
+
+    options.visual_range = 20
+    options.separation = 50
+    assert algorithm.neighbor_radius(options) == 50

@@ -148,6 +148,60 @@ uv run mypy src/my_boids tests
 uv run pytest tests/ --cov=my_boids --cov-report=html --cov-report=term
 ```
 
+## Experimental Flocking Algorithms
+
+`FlockStepper` accepts an optional algorithm; omitting it uses `ClassicFlocking`.
+`ClassicFlocking` and the `FlockingAlgorithm` protocol are available from
+`my_boids.flock_rules`; the stepper is in `my_boids.flock_stepper`.
+Individual functions such as `cohesion`, `avoid_other_boids`, `match_velocity`,
+and `flock_rules` remain available for composing experiments.
+
+For example, replace the classic composition with separation only:
+
+```python
+from collections.abc import Sequence
+
+from my_boids.boids import Boid
+from my_boids.flock_rules import avoid_other_boids
+from my_boids.flock_stepper import FlockStepper
+from my_boids.options import BoidOptions
+
+
+class SeparationOnly:
+    def __init__(self, strength: float = 0.1) -> None:
+        self.strength = strength
+
+    def neighbor_radius(self, options: BoidOptions) -> float:
+        return options.separation
+
+    def apply_to_boid(
+        self, boid: Boid, neighbors: Sequence[Boid], *, options: BoidOptions
+    ) -> None:
+        avoid_other_boids(boid, neighbors, options.separation, self.strength)
+
+
+stepper = FlockStepper(algorithm=SeparationOnly(strength=0.1), use_spatial_grid=True)
+```
+
+Call `stepper.apply()` with the same boids, predator position, and current option
+objects as usual. Algorithm selection is programmatic at stepper construction;
+there is no settings-menu or configuration-file selector.
+
+- `neighbor_radius()` is called once per pass and must return a finite
+  nonnegative radius, or `None` for the whole flock. Invalid radii raise
+  `ValueError` before boids are mutated. Unbounded or state-dependent interactions
+  should request the whole flock, which bypasses spatial pruning.
+- Neighbors are identical across scan/grid modes: supplied flock order, self
+  included, and Euclidean distance less than or equal to the declared radius.
+  Radius zero includes coincident members. Apply any stricter rule thresholds
+  inside the algorithm; wrapping does not imply toroidal neighbor distances.
+- Algorithms may mutate only the subject boid's velocity. Do not move boids,
+  change membership/options/neighbors, or retain neighborhoods as snapshots.
+  Later boids observe earlier velocity updates and boundary wraps.
+- The stepper still applies predator reaction, speed limiting, and boundary
+  handling after the algorithm, and owns spatial-index maintenance and
+  diagnostics. It does not own movement or collisions.
+
 ## Performance Monitoring
 
 The simulation includes built-in performance monitoring that displays real-time metrics on screen:

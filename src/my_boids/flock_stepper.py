@@ -2,12 +2,13 @@
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from math import isfinite
 
 import pygame as pg
 
 from my_boids.boid_vs_boundary import boid_vs_boundary
 from my_boids.boids import Boid
-from my_boids.flock_rules import flock_rules, react_to_predator
+from my_boids.flock_rules import ClassicFlocking, FlockingAlgorithm, react_to_predator
 from my_boids.options import BoidOptions, BoundaryType, PredatorOptions, ScreenOptions
 from my_boids.spatial_grid import SpatialGrid
 
@@ -24,7 +25,13 @@ class FlockStats:
 class FlockStepper:
     """Mutate boids sequentially without owning their population or movement."""
 
-    def __init__(self, *, use_spatial_grid: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        algorithm: FlockingAlgorithm | None = None,
+        use_spatial_grid: bool = False,
+    ) -> None:
+        self._algorithm = ClassicFlocking() if algorithm is None else algorithm
         self._use_spatial_grid = use_spatial_grid
         self._grid: SpatialGrid | None = None
         self._stats = FlockStats(use_spatial_grid, 0, 0 if use_spatial_grid else None)
@@ -38,10 +45,18 @@ class FlockStepper:
         predator_opts: PredatorOptions,
         screen_opts: ScreenOptions,
     ) -> None:
-        """Apply rules in supplied order using current membership and options."""
+        """Apply flocking, predator reaction, speed limit, then boundaries in order.
+
+        Later boids observe earlier velocity updates and wrapped positions.
+        Algorithm neighbors include self and preserve supplied flock order.
+        """
+        search_radius = self._algorithm.neighbor_radius(boid_opts)
+        if search_radius is not None and (not isfinite(search_radius) or search_radius < 0):
+            raise ValueError("Algorithm neighbor radius must be finite and nonnegative, or None")
+
         grid = None
         if self._use_spatial_grid:
-            cell_size = float(boid_opts.visual_range)
+            cell_size = max(float(boid_opts.visual_range), search_radius or 0)
             if self._grid is None or self._grid.cell_size != cell_size:
                 self._grid = SpatialGrid(cell_size=cell_size)
             grid = self._grid
@@ -50,23 +65,18 @@ class FlockStepper:
                 grid.insert(boid)
 
         order = {boid: index for index, boid in enumerate(boids)} if grid is not None else {}
-        search_radius = max(float(boid_opts.visual_range), boid_opts.separation)
         for boid in boids:
-            if grid is None:
+            if search_radius is None:
                 neighbors = list(boids)
+            elif grid is None:
+                neighbors = [
+                    other for other in boids if other.pos.distance_to(boid.pos) <= search_radius
+                ]
             else:
                 neighbors = grid.get_nearby_boids(boid.pos, search_radius)
                 neighbors.sort(key=order.__getitem__)
 
-            flock_rules(
-                boid,
-                neighbors,
-                cohesion_factor=boid_opts.cohesion_factor,
-                separation=boid_opts.separation,
-                avoid_factor=boid_opts.avoid_factor,
-                alignment_factor=boid_opts.alignment_factor,
-                visual_range=float(boid_opts.visual_range),
-            )
+            self._algorithm.apply_to_boid(boid, neighbors, options=boid_opts)
             react_to_predator(
                 boid,
                 predator_pos,
