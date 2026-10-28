@@ -60,6 +60,18 @@ class SpatialGrid:
         cell = self._get_cell(boid.pos)
         self.grid[cell].append(boid)
 
+    def relocate(self, boid: Boid, previous_pos: pg.Vector2) -> None:
+        """Keep cell membership current after a boid changes position."""
+        previous_cell = self._get_cell(previous_pos)
+        current_cell = self._get_cell(boid.pos)
+        if previous_cell == current_cell:
+            return
+        previous_members = self.grid[previous_cell]
+        previous_members.remove(boid)
+        if not previous_members:
+            del self.grid[previous_cell]
+        self.grid[current_cell].append(boid)
+
     def get_nearby_boids(
         self,
         pos: pg.Vector2,

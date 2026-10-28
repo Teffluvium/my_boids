@@ -3,8 +3,8 @@
 import pygame as pg
 
 from my_boids import hud
+from my_boids.flock_stepper import FlockStats
 from my_boids.performance import FrameMetrics, PerformanceMonitor
-from my_boids.spatial_grid import SpatialGrid
 
 
 def test_draw_predator_attack_mode_uses_friendly_label(monkeypatch, pygame_display):
@@ -41,16 +41,15 @@ def test_draw_metrics_includes_grid_mode_and_timing_lines(monkeypatch, pygame_di
         collision_time=0.003,
         render_time=0.004,
     )
-    spatial_grid = SpatialGrid(cell_size=25.0)
-
     hud.draw_metrics(
         pygame_display,
         performance,
         boid_count=12,
-        use_spatial_grid=True,
-        spatial_grid=spatial_grid,
+        flock_stats=FlockStats(True, 15, 3),
     )
 
+    assert "Boids: 12" in captured_lines
+    assert "Grid: 3 cells" in captured_lines
     assert "Mode: Spatial" in captured_lines
     assert "Update: 1.00ms" in captured_lines
     assert "Logic: 2.00ms" in captured_lines
@@ -96,8 +95,7 @@ def test_draw_frame_game_over_short_circuits_sprite_and_metric_draw(monkeypatch,
         performance=PerformanceMonitor(enabled=True),
         show_metrics=True,
         boid_count=0,
-        use_spatial_grid=False,
-        spatial_grid=None,
+        flock_stats=FlockStats(False, 0, None),
     )
 
     assert calls == ["game_over"]
@@ -141,8 +139,7 @@ def test_draw_frame_active_calls_expected_helpers(monkeypatch, pygame_display):
         performance=PerformanceMonitor(enabled=True),
         show_metrics=True,
         boid_count=3,
-        use_spatial_grid=False,
-        spatial_grid=None,
+        flock_stats=FlockStats(False, 0, None),
     )
 
     assert "sprites" in calls

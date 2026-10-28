@@ -3,9 +3,8 @@ from collections.abc import Callable
 import numpy as np
 import pygame as pg
 
-from my_boids.boid_vs_boundary import boid_vs_boundary
 from my_boids.boids import Boid
-from my_boids.flock_rules import flock_rules, react_to_predator
+from my_boids.flock_stepper import FlockStepper
 from my_boids.hud import (
     draw_frame,
     draw_game_over,
@@ -34,7 +33,6 @@ from my_boids.predator_targeting import (
     target_mouse_cursor,
     target_nearest_bird,
 )
-from my_boids.spatial_grid import SpatialGrid
 
 rng = np.random.default_rng()
 
@@ -63,11 +61,7 @@ class Game:
         self.boid_list: pg.sprite.Group[Boid] = pg.sprite.Group()
         self.all_sprites_list: pg.sprite.Group = pg.sprite.Group()
 
-        self.spatial_grid: SpatialGrid | None
-        if self.use_spatial_grid:
-            self.spatial_grid = SpatialGrid(cell_size=float(self.boid_opts.visual_range))
-        else:
-            self.spatial_grid = None
+        self.flock_stepper = FlockStepper(use_spatial_grid=use_spatial_grid)
 
         self.performance = PerformanceMonitor(enabled=enable_profiling)
 
@@ -178,9 +172,6 @@ class Game:
             for boid in list(self.boid_list)[target_count:]:
                 boid.kill()
 
-        if self.spatial_grid is not None:
-            self.spatial_grid = SpatialGrid(cell_size=float(new_opts.visual_range))
-
     def update_predator_options(self, new_opts: PredatorOptions) -> None:
         self.predator_opts = new_opts
 
@@ -209,52 +200,14 @@ class Game:
         strategy = self._predator_attack_mode_strategies.get(mode, target_mouse_cursor)
         return strategy()
 
-    def _apply_boid_movement_rules(self, boid: Boid) -> None:
-        boid_opts = self.boid_opts
-        predator_opts = self.predator_opts
-        screen_opts = self.screen_opts
-
-        if self.use_spatial_grid and self.spatial_grid:
-            nearby_boids = self.spatial_grid.get_nearby_boids(
-                boid.pos,
-                search_radius=float(boid_opts.visual_range),
-            )
-        else:
-            nearby_boids = list(self.boid_list)
-
-        flock_rules(
-            boid,
-            nearby_boids,
-            cohesion_factor=boid_opts.cohesion_factor,
-            separation=boid_opts.separation,
-            avoid_factor=boid_opts.avoid_factor,
-            alignment_factor=boid_opts.alignment_factor,
-            visual_range=float(boid_opts.visual_range),
-        )
-
-        react_to_predator(
-            boid,
-            self.predator.pos,
-            behavior_mode=boid_opts.boid_avoid_mode,
-            detection_range=predator_opts.predator_detection_range,
-            reaction_strength=predator_opts.predator_reaction_strength,
-        )
-
-        boid.speed_limit(boid_opts.max_speed)
-        boid_vs_boundary(
-            boid,
-            boundary_type=screen_opts.boundary_type,
-            window_size=(screen_opts.winsize[0], screen_opts.winsize[1]),
-        )
-
     def _apply_all_boid_rules(self) -> None:
-        if self.use_spatial_grid and self.spatial_grid:
-            self.spatial_grid.clear()
-            for boid in self.boid_list:
-                self.spatial_grid.insert(boid)
-
-        for boid in self.boid_list:
-            self._apply_boid_movement_rules(boid)
+        self.flock_stepper.apply(
+            tuple(self.boid_list),
+            predator_pos=self.predator.pos,
+            boid_opts=self.boid_opts,
+            predator_opts=self.predator_opts,
+            screen_opts=self.screen_opts,
+        )
 
     def _handle_predator_collisions(self) -> None:
         boid_hit_list = pg.sprite.spritecollide(
@@ -287,8 +240,7 @@ class Game:
             screen,
             self.performance,
             len(self.boid_list),
-            self.use_spatial_grid,
-            self.spatial_grid,
+            self.flock_stepper.stats(),
         )
 
     def display_frame(self, screen: pg.Surface, flip: bool = True):
@@ -303,8 +255,7 @@ class Game:
             self.performance,
             self.show_metrics,
             len(self.boid_list),
-            self.use_spatial_grid,
-            self.spatial_grid,
+            self.flock_stepper.stats(),
         )
         if flip:
             pg.display.flip()

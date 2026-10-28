@@ -2,9 +2,9 @@
 
 import pygame as pg
 
+from my_boids.flock_stepper import FlockStats
 from my_boids.options import BoidAvoidMode, PredatorAttackMode
 from my_boids.performance import PerformanceMonitor
-from my_boids.spatial_grid import SpatialGrid
 
 
 def draw_score(screen: pg.Surface, score: int) -> None:
@@ -56,8 +56,7 @@ def draw_metrics(
     screen: pg.Surface,
     performance: PerformanceMonitor,
     boid_count: int,
-    use_spatial_grid: bool,
-    spatial_grid: SpatialGrid | None,
+    flock_stats: FlockStats,
 ) -> None:
     """Draw performance metrics."""
     font = pg.font.SysFont("monospace", 14)
@@ -71,8 +70,8 @@ def draw_metrics(
         f"Boids: {boid_count}",
     ]
 
-    if use_spatial_grid and spatial_grid is not None:
-        metrics.append(f"Grid: {spatial_grid.get_cell_count()} cells")
+    if flock_stats.spatial_grid_enabled:
+        metrics.append(f"Grid: {flock_stats.occupied_cells} cells")
         metrics.append("Mode: Spatial")
     else:
         metrics.append("Mode: Brute Force")
@@ -100,8 +99,7 @@ def draw_frame(
     performance: PerformanceMonitor,
     show_metrics: bool,
     boid_count: int,
-    use_spatial_grid: bool,
-    spatial_grid: SpatialGrid | None,
+    flock_stats: FlockStats,
 ) -> None:
     """Draw the complete simulation frame."""
     screen.fill(pg.Color("black"))
@@ -115,4 +113,4 @@ def draw_frame(
     draw_predator_mode(screen, predator_mode)
     draw_predator_attack_mode(screen, predator_attack_mode)
     if show_metrics:
-        draw_metrics(screen, performance, boid_count, use_spatial_grid, spatial_grid)
+        draw_metrics(screen, performance, boid_count, flock_stats)
