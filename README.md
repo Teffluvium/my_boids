@@ -14,11 +14,13 @@ Python implementation of Boids using the PyGame engine for the visualization.
 If you don't have UV installed, install it first:
 
 **macOS/Linux:**
+
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 **Windows:**
+
 ```powershell
 powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
@@ -42,16 +44,19 @@ make install
 You can run the simulation using any of these methods:
 
 **Using UV:**
+
 ```bash
 uv run my-boids
 ```
 
 **Using the Makefile:**
+
 ```bash
 make run
 ```
 
 **Direct script execution (legacy):**
+
 ```bash
 python boids_sim.py
 ```
@@ -100,6 +105,7 @@ make pre-commit
 ```
 
 The following checks run automatically:
+
 - Ruff linting and formatting
 - Mypy type checking
 - Trailing whitespace removal
@@ -113,26 +119,31 @@ The following checks run automatically:
 If you prefer to run commands directly:
 
 **Format code:**
+
 ```bash
 uv run ruff format .
 ```
 
 **Lint code:**
+
 ```bash
 uv run ruff check .
 ```
 
 **Fix linting issues:**
+
 ```bash
 uv run ruff check --fix .
 ```
 
 **Run type checking:**
+
 ```bash
 uv run mypy src/my_boids tests
 ```
 
 **Run tests:**
+
 ```bash
 uv run pytest tests/ --cov=my_boids --cov-report=html --cov-report=term
 ```
@@ -171,53 +182,53 @@ This will test both brute force and spatial grid modes across multiple boid coun
 Adjust the parameters in the `[screen]` section of `config.ini` to change some general game settings:
 
 - Screen dimensions in pixels: [width, height]
-    \
-    `winsize = [800, 600]`
+  \
+  `winsize = [800, 600]`
 - Use fullscreen mode? Will accept values of 'yes'/'no', 'on'/'off', 'true'/'false' and '1'/'0'
-    \
-    `fullscreen = no`
+  \
+  `fullscreen = no`
 - Select the boundary type at the edge of the screen: either WRAP or BOUNCE
-    \
-    `boundary_type = BOUNCE`
+  \
+  `boundary_type = BOUNCE`
 
 Adjust the `[boid]` parameters at in the file `config.ini` to modify the boid behaviour in the simulation:
 
 - Number of boids
-    \
-    `num_boids = 7`
+  \
+  `num_boids = 7`
 - Size of the boids
-    \
-    `size = 5`
+  \
+  `size = 5`
 - Maximum speed of the boids
-    \
-    `max_speed = 3`
+  \
+  `max_speed = 3`
 - Amount that the boids move towards the center of the flock
-    \
-    `cohesion_factor = 0.001`
+  \
+  `cohesion_factor = 0.001`
 - Desired separation between boids
-    \
-    `separation = 20`
+  \
+  `separation = 20`
 - Amount that the boids move away from each other
-    \
-    `avoid_factor = 0.01`
+  \
+  `avoid_factor = 0.01`
 - Amount that the boids try to match the velocity of the flock
-    \
-    `alignment_factor = 0.01`
-- Radius of boids vision.  Boids will not interact with other boids that exceed this radius
-    \
-    `visual_range = 50`
+  \
+  `alignment_factor = 0.01`
+- Radius of boids vision. Boids will not interact with other boids that exceed this radius
+  \
+  `visual_range = 50`
 - Predator reaction mode. Use `avoid` for fleeing behaviour or `attract` to make boids chase the predator
-    \
-    `boid_avoid_mode = avoid`
+  \
+  `boid_avoid_mode = avoid`
 - Predator attack mode. Use `mouse`, `center`, `nearest`, or `isolated` to steer the predator with the mouse cursor or target the flock center, closest boid, or most isolated boid
-    \
-    `predator_attack_mode = mouse`
+  \
+  `predator_attack_mode = mouse`
 - Distance at which boids react to the predator
-    \
-    `predator_detection_range = 400.0`
+  \
+  `predator_detection_range = 400.0`
 - Strength of the boids' reaction to the predator
-    \
-    `predator_reaction_strength = 0.5`
+  \
+  `predator_reaction_strength = 0.5`
 
 ## Additional References for Boids
 
