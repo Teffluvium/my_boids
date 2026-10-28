@@ -16,8 +16,8 @@ from pygame_gui.elements import (
 )
 
 from my_boids.options import (
+    BOID_AVOID_MODES,
     PREDATOR_ATTACK_MODES,
-    PREDATOR_BEHAVIOR_MODES,
     BoidOptions,
     GameProtocol,
     PredatorOptions,
@@ -202,7 +202,7 @@ class SettingsDialog:
             container=self._panel,
         )
         self._predator_dd = UIDropDownMenu(
-            options_list=list(PREDATOR_BEHAVIOR_MODES),
+            options_list=list(BOID_AVOID_MODES),
             starting_option=self._game.boid_opts.boid_avoid_mode,
             relative_rect=pg.Rect(_PAD + _LBL_W + _PAD, cy, _SLD_W + _PAD + _TXT_W, _ROW_H),
             manager=self._manager,
@@ -391,7 +391,7 @@ class SettingsDialog:
                 old_rect = self._predator_dd.relative_rect.copy()
                 self._predator_dd.kill()
                 self._predator_dd = UIDropDownMenu(
-                    options_list=list(PREDATOR_BEHAVIOR_MODES),
+                    options_list=list(BOID_AVOID_MODES),
                     starting_option=boid_opts.boid_avoid_mode,
                     relative_rect=old_rect,
                     manager=self._manager,

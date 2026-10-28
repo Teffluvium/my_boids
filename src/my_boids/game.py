@@ -15,12 +15,12 @@ from my_boids.hud import (
     draw_score,
 )
 from my_boids.options import (
+    BOID_AVOID_MODE_ATTRACT,
+    BOID_AVOID_MODE_AVOID,
     PREDATOR_ATTACK_MODE_CENTER,
     PREDATOR_ATTACK_MODE_ISOLATED,
     PREDATOR_ATTACK_MODE_MOUSE,
     PREDATOR_ATTACK_MODE_NEAREST,
-    PREDATOR_MODE_ATTRACT,
-    PREDATOR_MODE_AVOID,
     BoidOptions,
     PredatorAttackMode,
     PredatorOptions,
@@ -145,10 +145,10 @@ class Game:
             if event.type == pg.MOUSEBUTTONDOWN and self.game_over:
                 self.reset()
             if event.type == pg.KEYUP and event.key == pg.K_p:
-                if self.boid_opts.boid_avoid_mode == PREDATOR_MODE_AVOID:
-                    self.boid_opts.boid_avoid_mode = PREDATOR_MODE_ATTRACT
+                if self.boid_opts.boid_avoid_mode == BOID_AVOID_MODE_AVOID:
+                    self.boid_opts.boid_avoid_mode = BOID_AVOID_MODE_ATTRACT
                 else:
-                    self.boid_opts.boid_avoid_mode = PREDATOR_MODE_AVOID
+                    self.boid_opts.boid_avoid_mode = BOID_AVOID_MODE_AVOID
 
         return False
 

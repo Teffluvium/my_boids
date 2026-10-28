@@ -19,12 +19,12 @@ class BoundaryType(Enum):
     WRAP = auto()
 
 
-PredatorBehaviorMode = Literal["avoid", "attract"]
-PREDATOR_MODE_AVOID: PredatorBehaviorMode = "avoid"
-PREDATOR_MODE_ATTRACT: PredatorBehaviorMode = "attract"
-PREDATOR_BEHAVIOR_MODES: tuple[PredatorBehaviorMode, PredatorBehaviorMode] = (
-    PREDATOR_MODE_AVOID,
-    PREDATOR_MODE_ATTRACT,
+BoidAvoidMode = Literal["avoid", "attract"]
+BOID_AVOID_MODE_AVOID: BoidAvoidMode = "avoid"
+BOID_AVOID_MODE_ATTRACT: BoidAvoidMode = "attract"
+BOID_AVOID_MODES: tuple[BoidAvoidMode, BoidAvoidMode] = (
+    BOID_AVOID_MODE_AVOID,
+    BOID_AVOID_MODE_ATTRACT,
 )
 
 PredatorAttackMode = Literal["mouse", "center", "nearest", "isolated"]
@@ -166,7 +166,7 @@ class BoidOptions(BaseModel):
     avoid_factor: float = Field(default=0.05, ge=0.01, le=0.2)
     alignment_factor: float = Field(default=0.05, ge=0.01, le=0.2)
     visual_range: int = Field(default=40, ge=20, le=100)
-    boid_avoid_mode: PredatorBehaviorMode = Field(default=PREDATOR_MODE_AVOID)
+    boid_avoid_mode: BoidAvoidMode = Field(default=BOID_AVOID_MODE_AVOID)
 
     @classmethod
     def get_defaults(cls) -> BoidOptions:
@@ -184,7 +184,7 @@ class BoidOptions(BaseModel):
                 fallback=defaults.boid_avoid_mode,
             ),
         )
-        if mode_raw not in PREDATOR_BEHAVIOR_MODES:
+        if mode_raw not in BOID_AVOID_MODES:
             mode_raw = defaults.boid_avoid_mode
 
         return cls(
@@ -200,7 +200,7 @@ class BoidOptions(BaseModel):
                 "alignment_factor", fallback=defaults.alignment_factor
             ),
             visual_range=config["boids"].getint("visual_range", fallback=defaults.visual_range),
-            boid_avoid_mode=cast(PredatorBehaviorMode, mode_raw),
+            boid_avoid_mode=cast(BoidAvoidMode, mode_raw),
         )
 
 

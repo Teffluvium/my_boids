@@ -7,9 +7,9 @@ import pytest
 
 from my_boids.game import Game
 from my_boids.options import (
+    BOID_AVOID_MODE_AVOID,
     PREDATOR_ATTACK_MODE_CENTER,
     PREDATOR_ATTACK_MODE_NEAREST,
-    PREDATOR_MODE_AVOID,
     BoidOptions,
     BoundaryType,
     PredatorOptions,
@@ -34,7 +34,7 @@ def fixture_ui_game(pygame_display):
         avoid_factor=0.05,
         alignment_factor=0.01,
         visual_range=100,
-        boid_avoid_mode=PREDATOR_MODE_AVOID,
+        boid_avoid_mode=BOID_AVOID_MODE_AVOID,
     )
     predator_opts = PredatorOptions(
         predator_attack_mode=PREDATOR_ATTACK_MODE_CENTER,

@@ -1,20 +1,51 @@
 """Tests for boids/options.py"""
 
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
 
 from my_boids.options import (
+    BOID_AVOID_MODE_AVOID,
     PREDATOR_ATTACK_MODE_CENTER,
     PREDATOR_ATTACK_MODE_MOUSE,
     PREDATOR_ATTACK_MODE_NEAREST,
-    PREDATOR_MODE_AVOID,
     BoidOptions,
     BoundaryType,
     PredatorOptions,
     ScreenOptions,
     load_config,
 )
+
+
+@pytest.fixture(autouse=True)
+def isolated_config(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    config_path = tmp_path / "config.ini"
+    config_path.write_text(
+        """[screen]
+winsize = [800, 600]
+fullscreen = no
+boundary_type = BOUNCE
+
+[boids]
+num_boids = 53
+size = 10
+max_speed = 20.0
+cohesion_factor = 0.01
+separation = 20.0
+avoid_factor = 0.05
+alignment_factor = 0.05
+visual_range = 40
+boid_avoid_mode = avoid
+
+[predator]
+predator_attack_mode = center
+"""
+    )
+    monkeypatch.chdir(tmp_path)
+    load_config.cache_clear()
+    yield
+    load_config.cache_clear()
 
 
 def test_screen_options_winsize():
@@ -86,7 +117,7 @@ def test_boid_options_visual_range():
 def test_boid_options_avoid_mode():
     """BoidOptions reads boid_avoid_mode from config."""
     opts = BoidOptions.from_config()
-    assert opts.boid_avoid_mode == PREDATOR_MODE_AVOID
+    assert opts.boid_avoid_mode == BOID_AVOID_MODE_AVOID
 
 
 def test_boid_options_avoid_mode_legacy_fallback(tmp_path: Path):

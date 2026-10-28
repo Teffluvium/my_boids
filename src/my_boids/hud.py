@@ -2,7 +2,7 @@
 
 import pygame as pg
 
-from my_boids.options import PredatorAttackMode, PredatorBehaviorMode
+from my_boids.options import BoidAvoidMode, PredatorAttackMode
 from my_boids.performance import PerformanceMonitor
 from my_boids.spatial_grid import SpatialGrid
 
@@ -17,7 +17,7 @@ def draw_score(screen: pg.Surface, score: int) -> None:
     screen.blit(text, text_rect)
 
 
-def draw_predator_mode(screen: pg.Surface, mode: PredatorBehaviorMode) -> None:
+def draw_predator_mode(screen: pg.Surface, mode: BoidAvoidMode) -> None:
     """Draw the current predator behavior mode."""
     font = pg.font.SysFont("serif", 25)
     text = font.render(f"Predator Mode: {mode.upper()}", True, pg.Color("white"))
@@ -94,7 +94,7 @@ def draw_frame(
     screen: pg.Surface,
     all_sprites: pg.sprite.Group,
     score: int,
-    predator_mode: PredatorBehaviorMode,
+    predator_mode: BoidAvoidMode,
     predator_attack_mode: PredatorAttackMode,
     game_over: bool,
     performance: PerformanceMonitor,
