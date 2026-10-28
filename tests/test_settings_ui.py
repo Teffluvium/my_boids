@@ -34,9 +34,9 @@ def fixture_ui_game(pygame_display):
         avoid_factor=0.05,
         alignment_factor=0.01,
         visual_range=100,
+        boid_avoid_mode=PREDATOR_MODE_AVOID,
     )
     predator_opts = PredatorOptions(
-        predator_behavior_mode=PREDATOR_MODE_AVOID,
         predator_attack_mode=PREDATOR_ATTACK_MODE_CENTER,
         predator_detection_range=400.0,
         predator_reaction_strength=0.5,
@@ -68,9 +68,9 @@ separation = 20.0
 avoid_factor = 0.05
 alignment_factor = 0.05
 visual_range = 40
+boid_avoid_mode = avoid
 
 [predator]
-predator_behavior_mode = avoid
 predator_attack_mode = center
 predator_detection_range = 400.0
 predator_reaction_strength = 0.5
@@ -101,5 +101,6 @@ def test_settings_dialog_handle_save_writes_predator_section(tmp_path: Path, ui_
     text = (tmp_path / "config.ini").read_text()
     assert "[predator]" in text
     assert "predator_attack_mode = center" in text
+    assert "boid_avoid_mode = avoid" in text
     assert "num_boids = 3" in text
     assert "None" not in text

@@ -166,6 +166,7 @@ class BoidOptions(BaseModel):
     avoid_factor: float = Field(default=0.05, ge=0.01, le=0.2)
     alignment_factor: float = Field(default=0.05, ge=0.01, le=0.2)
     visual_range: int = Field(default=40, ge=20, le=100)
+    boid_avoid_mode: PredatorBehaviorMode = Field(default=PREDATOR_MODE_AVOID)
 
     @classmethod
     def get_defaults(cls) -> BoidOptions:
@@ -175,6 +176,17 @@ class BoidOptions(BaseModel):
     def from_config(cls, config_path: str = "config.ini") -> BoidOptions:
         config = load_config(config_path)
         defaults = cls.get_defaults()
+
+        mode_raw = config["boids"].get(
+            "boid_avoid_mode",
+            fallback=config["boids"].get(
+                "predator_behavior_mode",
+                fallback=defaults.boid_avoid_mode,
+            ),
+        )
+        if mode_raw not in PREDATOR_BEHAVIOR_MODES:
+            mode_raw = defaults.boid_avoid_mode
+
         return cls(
             num_boids=config["boids"].getint("num_boids", fallback=defaults.num_boids),
             size=config["boids"].getint("size", fallback=defaults.size),
@@ -188,6 +200,7 @@ class BoidOptions(BaseModel):
                 "alignment_factor", fallback=defaults.alignment_factor
             ),
             visual_range=config["boids"].getint("visual_range", fallback=defaults.visual_range),
+            boid_avoid_mode=cast(PredatorBehaviorMode, mode_raw),
         )
 
 
@@ -196,7 +209,6 @@ class PredatorOptions(BaseModel):
 
     model_config = ConfigDict(validate_assignment=True)
 
-    predator_behavior_mode: PredatorBehaviorMode = Field(default=PREDATOR_MODE_AVOID)
     predator_attack_mode: PredatorAttackMode = Field(default=PREDATOR_ATTACK_MODE_MOUSE)
     predator_detection_range: float = Field(default=400.0, ge=100.0, le=600.0)
     predator_reaction_strength: float = Field(default=0.5, ge=0.1, le=2.0)
@@ -211,12 +223,6 @@ class PredatorOptions(BaseModel):
         defaults = cls.get_defaults()
         predator_section = config["predator"] if config.has_section("predator") else config["boids"]
 
-        mode_raw = predator_section.get(
-            "predator_behavior_mode", fallback=defaults.predator_behavior_mode
-        )
-        if mode_raw not in PREDATOR_BEHAVIOR_MODES:
-            mode_raw = defaults.predator_behavior_mode
-
         attack_mode_raw = predator_section.get(
             "predator_attack_mode",
             fallback=predator_section.get(
@@ -228,7 +234,6 @@ class PredatorOptions(BaseModel):
             attack_mode_raw = defaults.predator_attack_mode
 
         return cls(
-            predator_behavior_mode=cast(PredatorBehaviorMode, mode_raw),
             predator_attack_mode=cast(PredatorAttackMode, attack_mode_raw),
             predator_detection_range=predator_section.getfloat(
                 "predator_detection_range", fallback=defaults.predator_detection_range

@@ -145,10 +145,10 @@ class Game:
             if event.type == pg.MOUSEBUTTONDOWN and self.game_over:
                 self.reset()
             if event.type == pg.KEYUP and event.key == pg.K_p:
-                if self.predator_opts.predator_behavior_mode == PREDATOR_MODE_AVOID:
-                    self.predator_opts.predator_behavior_mode = PREDATOR_MODE_ATTRACT
+                if self.boid_opts.boid_avoid_mode == PREDATOR_MODE_AVOID:
+                    self.boid_opts.boid_avoid_mode = PREDATOR_MODE_ATTRACT
                 else:
-                    self.predator_opts.predator_behavior_mode = PREDATOR_MODE_AVOID
+                    self.boid_opts.boid_avoid_mode = PREDATOR_MODE_AVOID
 
         return False
 
@@ -235,7 +235,7 @@ class Game:
         react_to_predator(
             boid,
             self.predator.pos,
-            behavior_mode=predator_opts.predator_behavior_mode,
+            behavior_mode=boid_opts.boid_avoid_mode,
             detection_range=predator_opts.predator_detection_range,
             reaction_strength=predator_opts.predator_reaction_strength,
         )
@@ -274,7 +274,7 @@ class Game:
         draw_score(screen, self.score)
 
     def display_predator_mode(self, screen: pg.Surface):
-        draw_predator_mode(screen, self.predator_opts.predator_behavior_mode)
+        draw_predator_mode(screen, self.boid_opts.boid_avoid_mode)
 
     def display_predator_attack_mode(self, screen: pg.Surface):
         draw_predator_attack_mode(screen, self.predator_opts.predator_attack_mode)
@@ -297,7 +297,7 @@ class Game:
             screen,
             self.all_sprites_list,
             self.score,
-            self.predator_opts.predator_behavior_mode,
+            self.boid_opts.boid_avoid_mode,
             self.predator_opts.predator_attack_mode,
             self.game_over,
             self.performance,
