@@ -1,5 +1,7 @@
 .DS_Store
 mypy_report
+.agents/
+issues/
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,vim,jetbrains+all,virtualenv
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,visualstudiocode,vim,jetbrains+all,virtualenv

@@ -21,6 +21,7 @@ my_boids = ["assets/*"]
 
 [dependency-groups]
 dev = [
+    "mdformat>=1.0.0",
     "mypy>=1.14.1",
     "pre-commit>=4.0.0",
     "pytest>=9.0.3",

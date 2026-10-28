@@ -238,27 +238,52 @@ def test_display_game_over_text(game, pygame_display):
 
 
 def test_game_spatial_grid_disabled(game):
-    assert game.use_spatial_grid is False
-    assert game.spatial_grid is None
+    assert game.flock_stepper.stats().spatial_grid_enabled is False
+    assert game.flock_stepper.stats().occupied_cells is None
 
 
 def test_game_spatial_grid_enabled(game_with_spatial_grid):
-    assert game_with_spatial_grid.use_spatial_grid is True
-    assert game_with_spatial_grid.spatial_grid is not None
-
-
-def test_spatial_grid_cell_size_matches_visual_range(game_with_spatial_grid):
-    assert game_with_spatial_grid.spatial_grid is not None
-    assert game_with_spatial_grid.spatial_grid.cell_size == 100
-
-
-def test_spatial_grid_run_logic(game_with_spatial_grid):
+    assert game_with_spatial_grid.flock_stepper.stats().spatial_grid_enabled is True
     game_with_spatial_grid.run_logic()
+    assert game_with_spatial_grid.flock_stepper.stats().boids_processed == 3
 
 
-def test_spatial_grid_produces_same_behavior(game_with_spatial_grid):
-    for _ in range(5):
-        game_with_spatial_grid.run_logic()
+def test_neighbor_backends_agree_when_separation_exceeds_visual_range(game, game_with_spatial_grid):
+    for simulation in (game, game_with_spatial_grid):
+        simulation.update_boid_options(
+            simulation.boid_opts.model_copy(update={"separation": 50.0, "visual_range": 20})
+        )
+        simulation.predator_opts.predator_detection_range = 100.0
+        simulation.predator.pos.update(750, 50)
+        for boid, position in zip(
+            simulation.boid_list, [(300, 300), (330, 300), (600, 500)], strict=True
+        ):
+            boid.pos.update(position)
+            boid.vel.update(0, 0)
+        simulation.run_logic()
 
-    assert game_with_spatial_grid.score >= 0
-    assert len(game_with_spatial_grid.boid_list) <= 3
+    for full_scan, indexed in zip(game.boid_list, game_with_spatial_grid.boid_list, strict=True):
+        assert tuple(indexed.pos) == pytest.approx(tuple(full_scan.pos), abs=1e-9, rel=1e-9)
+        assert tuple(indexed.vel) == pytest.approx(tuple(full_scan.vel), abs=1e-9, rel=1e-9)
+
+
+def test_neighbor_backends_observe_positions_wrapped_earlier_in_the_pass(
+    game, game_with_spatial_grid
+):
+    for simulation in (game, game_with_spatial_grid):
+        simulation.screen_opts.boundary_type = BoundaryType.WRAP
+        simulation.update_boid_options(
+            simulation.boid_opts.model_copy(update={"separation": 20.0, "visual_range": 20})
+        )
+        simulation.predator_opts.predator_detection_range = 100.0
+        simulation.predator.pos.update(750, 50)
+        for boid, position in zip(
+            simulation.boid_list, [(805, 300), (10, 300), (600, 500)], strict=True
+        ):
+            boid.pos.update(position)
+            boid.vel.update(0, 0)
+        simulation.run_logic()
+
+    for full_scan, indexed in zip(game.boid_list, game_with_spatial_grid.boid_list, strict=True):
+        assert tuple(indexed.pos) == pytest.approx(tuple(full_scan.pos), abs=1e-9, rel=1e-9)
+        assert tuple(indexed.vel) == pytest.approx(tuple(full_scan.vel), abs=1e-9, rel=1e-9)
