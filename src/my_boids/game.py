@@ -1,5 +1,3 @@
-from collections.abc import Callable
-
 import numpy as np
 import pygame as pg
 
@@ -16,23 +14,13 @@ from my_boids.hud import (
 from my_boids.options import (
     BOID_AVOID_MODE_ATTRACT,
     BOID_AVOID_MODE_AVOID,
-    PREDATOR_ATTACK_MODE_CENTER,
-    PREDATOR_ATTACK_MODE_ISOLATED,
-    PREDATOR_ATTACK_MODE_MOUSE,
-    PREDATOR_ATTACK_MODE_NEAREST,
     BoidOptions,
-    PredatorAttackMode,
     PredatorOptions,
     ScreenOptions,
 )
 from my_boids.performance import PerformanceMonitor
 from my_boids.predator import Predator
-from my_boids.predator_targeting import (
-    target_flock_center,
-    target_most_isolated_bird,
-    target_mouse_cursor,
-    target_nearest_bird,
-)
+from my_boids.predator_targeting import resolve_predator_target
 
 rng = np.random.default_rng()
 
@@ -66,26 +54,6 @@ class Game:
         self.performance = PerformanceMonitor(enabled=enable_profiling)
 
         self._initialize_sprites()
-        self._predator_attack_mode_strategies = self._build_predator_attack_mode_strategies()
-
-    def _build_predator_attack_mode_strategies(
-        self,
-    ) -> dict[PredatorAttackMode, Callable[[], pg.Vector2]]:
-        """Build map of predator attack mode handlers."""
-        return {
-            PREDATOR_ATTACK_MODE_MOUSE: target_mouse_cursor,
-            PREDATOR_ATTACK_MODE_CENTER: lambda: target_flock_center(
-                list(self.boid_list), self.predator.pos
-            ),
-            PREDATOR_ATTACK_MODE_NEAREST: lambda: target_nearest_bird(
-                self.predator.pos,
-                list(self.boid_list),
-                self.predator.pos,
-            ),
-            PREDATOR_ATTACK_MODE_ISOLATED: lambda: target_most_isolated_bird(
-                list(self.boid_list), self.predator.pos
-            ),
-        }
 
     def _create_boid(self) -> Boid:
         screen_opts = self.screen_opts
@@ -196,9 +164,12 @@ class Game:
         self.predator.update(self._get_predator_target())
 
     def _get_predator_target(self) -> pg.Vector2:
-        mode = self.predator_opts.predator_attack_mode
-        strategy = self._predator_attack_mode_strategies.get(mode, target_mouse_cursor)
-        return strategy()
+        return resolve_predator_target(
+            self.predator_opts.predator_attack_mode,
+            tuple(self.boid_list),
+            self.predator.pos,
+            pg.Vector2(pg.mouse.get_pos()),
+        )
 
     def _apply_all_boid_rules(self) -> None:
         self.flock_stepper.apply(

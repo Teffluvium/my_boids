@@ -8,8 +8,6 @@ from my_boids.options import (
     BOID_AVOID_MODE_AVOID,
     PREDATOR_ATTACK_MODE_CENTER,
     PREDATOR_ATTACK_MODE_ISOLATED,
-    PREDATOR_ATTACK_MODE_MOUSE,
-    PREDATOR_ATTACK_MODE_NEAREST,
     BoidOptions,
     BoundaryType,
     PredatorOptions,
@@ -132,38 +130,22 @@ def test_score_increments_on_collision(game):
     assert game.score > score_before
 
 
-def test_get_predator_target_center_strategy(game):
-    positions = [(100, 100), (200, 100), (300, 200)]
-    for boid, (x_pos, y_pos) in zip(game.boid_list, positions, strict=False):
-        boid.pos = pg.Vector2(x_pos, y_pos)
+def test_get_predator_target_passes_current_state_to_resolver(game, monkeypatch):
+    mode = PREDATOR_ATTACK_MODE_ISOLATED
+    game.predator_opts.predator_attack_mode = mode
+    mouse_pos = pg.Vector2(123, 456)
+    target = pg.Vector2(11, 12)
+    calls = []
 
-    game.predator_opts.predator_attack_mode = PREDATOR_ATTACK_MODE_CENTER
-    assert game._get_predator_target() == pg.Vector2(200, 400 / 3)
+    def resolve(mode_arg, boids, predator_pos, mouse_pos_arg):
+        calls.append((mode_arg, boids, predator_pos, mouse_pos_arg))
+        return target
 
+    monkeypatch.setattr(pg.mouse, "get_pos", lambda: mouse_pos.xy)
+    monkeypatch.setattr("my_boids.game.resolve_predator_target", resolve)
 
-def test_get_predator_target_nearest_strategy(game):
-    game.predator.pos = pg.Vector2(10, 10)
-    positions = [(100, 100), (30, 20), (300, 200)]
-    for boid, (x_pos, y_pos) in zip(game.boid_list, positions, strict=False):
-        boid.pos = pg.Vector2(x_pos, y_pos)
-
-    game.predator_opts.predator_attack_mode = PREDATOR_ATTACK_MODE_NEAREST
-    assert game._get_predator_target() == pg.Vector2(30, 20)
-
-
-def test_get_predator_target_isolated_strategy(game):
-    positions = [(100, 100), (110, 100), (400, 400)]
-    for boid, (x_pos, y_pos) in zip(game.boid_list, positions, strict=False):
-        boid.pos = pg.Vector2(x_pos, y_pos)
-
-    game.predator_opts.predator_attack_mode = PREDATOR_ATTACK_MODE_ISOLATED
-    assert game._get_predator_target() == pg.Vector2(400, 400)
-
-
-def test_get_predator_target_mouse_strategy(game, monkeypatch):
-    game.predator_opts.predator_attack_mode = PREDATOR_ATTACK_MODE_MOUSE
-    monkeypatch.setattr(pg.mouse, "get_pos", lambda: (123, 456))
-    assert game._get_predator_target() == pg.Vector2(123, 456)
+    assert game._get_predator_target() == target
+    assert calls == [(mode, tuple(game.boid_list), game.predator.pos, mouse_pos)]
 
 
 def test_process_events_returns_false_with_no_events(game):
