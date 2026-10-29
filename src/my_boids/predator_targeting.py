@@ -1,6 +1,7 @@
 """Predator target selection strategies."""
 
 import math
+import random
 from collections.abc import Sequence
 
 import pygame as pg
@@ -12,6 +13,60 @@ from my_boids.options import (
     PREDATOR_ATTACK_MODE_NEAREST,
     PredatorAttackMode,
 )
+
+_RANGED_MODES: tuple[PredatorAttackMode, ...] = (
+    PREDATOR_ATTACK_MODE_CENTER,
+    PREDATOR_ATTACK_MODE_NEAREST,
+    PREDATOR_ATTACK_MODE_ISOLATED,
+)
+# Matches move_to's default tolerance so arrival agrees with when the predator stops.
+ARRIVAL_TOLERANCE = 10.0
+
+
+class PredatorTargeter:
+    """Choose predator targets: hunt in range, search the last-seen spot, then wander."""
+
+    def __init__(self, screen_size: tuple[int, int], rng: random.Random | None = None) -> None:
+        self._screen_size = screen_size
+        self._rng = random.Random() if rng is None else rng
+        self._last_seen: pg.Vector2 | None = None
+        self._wander_point: pg.Vector2 | None = None
+
+    def next_target(
+        self,
+        mode: PredatorAttackMode,
+        boids: Sequence[Boid],
+        predator_pos: pg.Vector2,
+        mouse_pos: pg.Vector2,
+        detection_range: float,
+    ) -> pg.Vector2:
+        if mode not in _RANGED_MODES:
+            return pg.Vector2(mouse_pos)
+
+        target = find_target_in_range(mode, boids, predator_pos, mouse_pos, detection_range)
+        if target is not None:
+            self._last_seen = pg.Vector2(target)
+            self._wander_point = None
+            return target
+
+        if self._last_seen is not None:
+            if predator_pos.distance_to(self._last_seen) > ARRIVAL_TOLERANCE:
+                return pg.Vector2(self._last_seen)
+            self._last_seen = None
+
+        if (
+            self._wander_point is None
+            or predator_pos.distance_to(self._wander_point) <= ARRIVAL_TOLERANCE
+        ):
+            self._wander_point = pg.Vector2(
+                self._rng.uniform(0, self._screen_size[0]),
+                self._rng.uniform(0, self._screen_size[1]),
+            )
+        return pg.Vector2(self._wander_point)
+
+    def reset(self) -> None:
+        self._last_seen = None
+        self._wander_point = None
 
 
 def resolve_predator_target(
@@ -33,11 +88,7 @@ def find_target_in_range(
     detection_range: float,
 ) -> pg.Vector2 | None:
     """Return the mode's target among boids within range, or None if none are in range."""
-    if mode not in (
-        PREDATOR_ATTACK_MODE_CENTER,
-        PREDATOR_ATTACK_MODE_NEAREST,
-        PREDATOR_ATTACK_MODE_ISOLATED,
-    ):
+    if mode not in _RANGED_MODES:
         return pg.Vector2(mouse_pos)
 
     in_range = [boid for boid in boids if predator_pos.distance_to(boid.pos) <= detection_range]
