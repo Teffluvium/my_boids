@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from my_boids.options import BoidOptions, PredatorOptions, load_config
+from my_boids.options import BoidOptions, PredatorOptions, load_config, write_config
 from my_boids.settings_service import SettingsSaveError, save_settings
 
 BOID_VALUES: dict[str, object] = {
@@ -170,3 +170,114 @@ def test_save_settings_reports_persisted_state_when_apply_fails(tmp_path: Path) 
     assert isinstance(error.value.__cause__, RuntimeError)
     assert runtime.calls == ["boids", "predator"]
     assert "num_boids = 3" in config_path.read_text()
+
+
+@pytest.mark.parametrize("has_predator_section", [False, True])
+@pytest.mark.parametrize("trailing_newline", [False, True])
+def test_write_config_inserts_motion_keys_in_their_own_sections(
+    tmp_path: Path, has_predator_section: bool, trailing_newline: bool
+) -> None:
+    config_path = tmp_path / "motion.ini"
+    original = (
+        "# Keep this comment.\n[boids]\nmax_speed = 8.0  # Flock speed\n\n"
+        + ("[predator]\npredator_attack_mode = nearest\n\n" if has_predator_section else "")
+        + "[extra]\nuntouched = yes"
+        + ("\n" if trailing_newline else "")
+    )
+    config_path.write_text(original)
+    assert load_config(str(config_path))["boids"]["max_speed"] == "8.0  # Flock speed"
+
+    updates = {
+        "boids": {"max_acceleration": "0.31", "max_deceleration": "0.14"},
+        "predator": {"max_speed": "6.75", "max_acceleration": "0.62", "max_deceleration": "0.23"},
+    }
+    write_config(str(config_path), updates)
+
+    config = load_config(str(config_path))
+    for section, values in updates.items():
+        for field, value in values.items():
+            assert config[section][field] == value
+    assert dict(config["extra"]) == {"untouched": "yes"}
+    text = config_path.read_text()
+    assert "# Keep this comment.\n[boids]\nmax_speed = 8.0  # Flock speed" in text
+    write_config(str(config_path), updates)
+    assert config_path.read_text() == text
+
+
+def test_save_settings_round_trips_independent_motion_values(tmp_path: Path) -> None:
+    config_path = tmp_path / "config.ini"
+    _write_config(config_path)
+    runtime = FakeRuntime()
+    boid_values = {**BOID_VALUES, "max_acceleration": 0.31, "max_deceleration": 0.14}
+    predator_values = {
+        **PREDATOR_VALUES,
+        "max_speed": 6.75,
+        "max_acceleration": 0.62,
+        "max_deceleration": 0.23,
+    }
+    assert BoidOptions.from_config(str(config_path)).max_acceleration == 0.5
+
+    save_settings(
+        runtime=runtime,
+        boid_values=boid_values,
+        predator_values=predator_values,
+        config_path=config_path,
+    )
+
+    assert runtime.boid_options is not None
+    assert runtime.predator_options is not None
+    assert runtime.boid_options == BoidOptions.model_validate(boid_values)
+    assert runtime.predator_options == PredatorOptions.model_validate(predator_values)
+    assert BoidOptions.from_config(str(config_path)) == runtime.boid_options
+    assert PredatorOptions.from_config(str(config_path)) == runtime.predator_options
+    assert runtime.calls == ["boids", "predator"]
+    assert dict(load_config(str(config_path))["extra"]) == {"untouched": "yes"}
+
+    text = config_path.read_text()
+    assert "# Keep this comment." in text
+    assert "# Preserve this setting comment." in text
+    save_settings(
+        runtime=runtime,
+        boid_values=boid_values,
+        predator_values=predator_values,
+        config_path=config_path,
+    )
+    assert config_path.read_text() == text
+
+
+@pytest.mark.parametrize(
+    "section, field",
+    [
+        ("boids", "max_acceleration"),
+        ("boids", "max_deceleration"),
+        ("predator", "max_speed"),
+        ("predator", "max_acceleration"),
+        ("predator", "max_deceleration"),
+    ],
+)
+@pytest.mark.parametrize("invalid", [0, -1, 50.1, float("nan"), float("inf"), -float("inf")])
+def test_invalid_motion_save_has_no_side_effects(
+    tmp_path: Path, section: str, field: str, invalid: float
+) -> None:
+    config_path = tmp_path / "config.ini"
+    _write_config(config_path)
+    original = config_path.read_text()
+    runtime = FakeRuntime()
+    values = {"boids": BOID_VALUES.copy(), "predator": PREDATOR_VALUES.copy()}
+    values[section][field] = invalid
+
+    with pytest.raises(SettingsSaveError) as error:
+        save_settings(
+            runtime=runtime,
+            boid_values=values["boids"],
+            predator_values=values["predator"],
+            config_path=config_path,
+        )
+
+    assert error.value.phase == "validation"
+    assert error.value.field == field
+    assert not error.value.persisted
+    assert runtime.calls == []
+    assert runtime.boid_options is None
+    assert runtime.predator_options is None
+    assert config_path.read_text() == original

@@ -70,9 +70,28 @@ def write_config(config_path: str, updates: dict[str, dict[str, str]]) -> None:
     current_section: str | None = None
     new_lines: list[str] = []
 
+    def append_missing_keys(section: str | None) -> None:
+        if section is None or section not in normalized_updates:
+            return
+        missing_keys = [
+            key for key in normalized_updates[section] if key not in written_keys[section]
+        ]
+        if not missing_keys:
+            return
+        if new_lines and not new_lines[-1].endswith("\n"):
+            new_lines[-1] += "\n"
+        insertion = len(new_lines)
+        while insertion > 0 and not new_lines[insertion - 1].strip():
+            insertion -= 1
+        new_lines[insertion:insertion] = [
+            f"{key} = {normalized_updates[section][key]}\n" for key in missing_keys
+        ]
+        written_keys[section].update(missing_keys)
+
     for line in lines:
         section_match = section_pattern.match(line)
         if section_match is not None:
+            append_missing_keys(current_section)
             current_section = section_match.group(1).lower()
             if current_section in seen_sections:
                 seen_sections[current_section] = True
@@ -102,6 +121,7 @@ def write_config(config_path: str, updates: dict[str, dict[str, str]]) -> None:
         written_keys[current_section].add(key)
         new_lines.append(f"{indent}{key}{separator}{value}{comment_text}{line_ending}")
 
+    append_missing_keys(current_section)
     if new_lines and not new_lines[-1].endswith("\n"):
         new_lines[-1] += "\n"
 
@@ -168,6 +188,8 @@ class BoidOptions(BaseModel):
     num_boids: int = Field(default=53, ge=1, le=200)
     size: int = Field(default=10, ge=5, le=20)
     max_speed: float = Field(default=20.0, ge=5.0, le=50.0)
+    max_acceleration: float = Field(default=0.5, ge=0.1, le=5.0, allow_inf_nan=False)
+    max_deceleration: float = Field(default=1.0, ge=0.1, le=5.0, allow_inf_nan=False)
     cohesion_factor: float = Field(default=0.01, ge=0.001, le=0.1)
     separation: float = Field(default=20.0, ge=10.0, le=50.0)
     avoid_factor: float = Field(default=0.05, ge=0.01, le=0.2)
@@ -198,6 +220,12 @@ class BoidOptions(BaseModel):
             num_boids=config["boids"].getint("num_boids", fallback=defaults.num_boids),
             size=config["boids"].getint("size", fallback=defaults.size),
             max_speed=config["boids"].getfloat("max_speed", fallback=defaults.max_speed),
+            max_acceleration=config["boids"].getfloat(
+                "max_acceleration", fallback=defaults.max_acceleration
+            ),
+            max_deceleration=config["boids"].getfloat(
+                "max_deceleration", fallback=defaults.max_deceleration
+            ),
             cohesion_factor=config["boids"].getfloat(
                 "cohesion_factor", fallback=defaults.cohesion_factor
             ),
@@ -216,6 +244,9 @@ class PredatorOptions(BaseModel):
 
     model_config = ConfigDict(validate_assignment=True)
 
+    max_speed: float = Field(default=5.0, ge=1.0, le=50.0, allow_inf_nan=False)
+    max_acceleration: float = Field(default=0.5, ge=0.1, le=5.0, allow_inf_nan=False)
+    max_deceleration: float = Field(default=1.0, ge=0.1, le=5.0, allow_inf_nan=False)
     predator_attack_mode: PredatorAttackMode = Field(default=PREDATOR_ATTACK_MODE_MOUSE)
     predator_detection_range: float = Field(default=400.0, ge=100.0, le=600.0)
     predator_reaction_strength: float = Field(default=0.5, ge=0.1, le=2.0)
@@ -241,6 +272,13 @@ class PredatorOptions(BaseModel):
             attack_mode_raw = defaults.predator_attack_mode
 
         return cls(
+            max_speed=config.getfloat("predator", "max_speed", fallback=defaults.max_speed),
+            max_acceleration=config.getfloat(
+                "predator", "max_acceleration", fallback=defaults.max_acceleration
+            ),
+            max_deceleration=config.getfloat(
+                "predator", "max_deceleration", fallback=defaults.max_deceleration
+            ),
             predator_attack_mode=cast(PredatorAttackMode, attack_mode_raw),
             predator_detection_range=predator_section.getfloat(
                 "predator_detection_range", fallback=defaults.predator_detection_range

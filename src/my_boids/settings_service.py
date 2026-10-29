@@ -66,6 +66,8 @@ def save_settings(
                     "num_boids": str(validated_boids.num_boids),
                     "size": str(validated_boids.size),
                     "max_speed": str(validated_boids.max_speed),
+                    "max_acceleration": str(validated_boids.max_acceleration),
+                    "max_deceleration": str(validated_boids.max_deceleration),
                     "cohesion_factor": str(validated_boids.cohesion_factor),
                     "separation": str(validated_boids.separation),
                     "avoid_factor": str(validated_boids.avoid_factor),
@@ -74,6 +76,9 @@ def save_settings(
                     "boid_avoid_mode": validated_boids.boid_avoid_mode,
                 },
                 "predator": {
+                    "max_speed": str(validated_predator.max_speed),
+                    "max_acceleration": str(validated_predator.max_acceleration),
+                    "max_deceleration": str(validated_predator.max_deceleration),
                     "predator_attack_mode": validated_predator.predator_attack_mode,
                     "predator_detection_range": str(validated_predator.predator_detection_range),
                     "predator_reaction_strength": str(
