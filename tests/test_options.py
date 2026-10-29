@@ -66,6 +66,26 @@ def test_screen_options_boundary_type():
     assert opts.boundary_type == BoundaryType.BOUNCE
 
 
+def test_screen_options_show_metrics_defaults_to_true():
+    assert ScreenOptions().show_metrics is True
+
+
+def test_screen_options_show_metrics_falls_back_to_true_when_missing():
+    assert ScreenOptions.from_config().show_metrics is True
+
+
+@pytest.mark.parametrize(("raw", "expected"), [("yes", True), ("no", False)])
+def test_screen_options_reads_show_metrics(tmp_path: Path, raw: str, expected: bool):
+    config_path = tmp_path / "metrics.ini"
+    config_path.write_text(
+        f"[screen]\nwinsize = [800, 600]\nboundary_type = BOUNCE\nshow_metrics = {raw}\n"
+    )
+    load_config.cache_clear()
+
+    assert ScreenOptions.from_config(str(config_path)).show_metrics is expected
+    load_config.cache_clear()
+
+
 def test_boid_options_num_boids():
     """BoidOptions reads num_boids from config"""
     opts = BoidOptions.from_config()

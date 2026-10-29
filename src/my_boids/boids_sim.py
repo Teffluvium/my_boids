@@ -50,7 +50,7 @@ def main():
     )
 
     # Create an instance of the Game class
-    game = Game(screen_opts=screen_opts)
+    game = Game(screen_opts=screen_opts, show_metrics=screen_opts.show_metrics)
 
     # Create the settings dialog (built lazily when first opened)
     settings_dialog = SettingsDialog(
