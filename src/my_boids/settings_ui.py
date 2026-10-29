@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import pygame as pg
 import pygame_gui
-from pydantic import ValidationError
 from pygame_gui.elements import (
     UIButton,
     UIDropDownMenu,
@@ -22,8 +21,8 @@ from my_boids.options import (
     GameProtocol,
     PredatorOptions,
     ScreenOptions,
-    write_config,
 )
+from my_boids.settings_service import SettingsSaveError, save_settings
 
 _DW = 580
 _DH = 680
@@ -507,44 +506,24 @@ class SettingsDialog:
         return values
 
     def _handle_save(self) -> None:
-        raw_boid_values = self._collect_boid_values()
-        raw_predator_values = self._collect_predator_values()
         try:
-            validated_boids = BoidOptions.model_validate(raw_boid_values)
-            validated_predator = PredatorOptions.model_validate(raw_predator_values)
-        except ValidationError as exc:
-            first = exc.errors()[0]
-            field = first.get("loc", ("?",))[0]
-            msg = first.get("msg", str(exc))
-            self._show_error(f"{field}: {msg}")
+            save_settings(
+                runtime=self._game,
+                boid_values=self._collect_boid_values(),
+                predator_values=self._collect_predator_values(),
+                config_path=self._config_path,
+            )
+        except SettingsSaveError as exc:
+            if exc.phase == "validation":
+                message = str(exc)
+            elif exc.persisted:
+                message = f"Saved, but not fully applied: {exc}"
+            else:
+                message = f"Could not save settings: {exc}"
+            self._show_error(message)
             return
 
         self._clear_error()
-        write_config(
-            self._config_path,
-            {
-                "boids": {
-                    "num_boids": str(validated_boids.num_boids),
-                    "size": str(validated_boids.size),
-                    "max_speed": str(validated_boids.max_speed),
-                    "cohesion_factor": str(validated_boids.cohesion_factor),
-                    "separation": str(validated_boids.separation),
-                    "avoid_factor": str(validated_boids.avoid_factor),
-                    "alignment_factor": str(validated_boids.alignment_factor),
-                    "visual_range": str(validated_boids.visual_range),
-                    "boid_avoid_mode": validated_boids.boid_avoid_mode,
-                },
-                "predator": {
-                    "predator_attack_mode": validated_predator.predator_attack_mode,
-                    "predator_detection_range": str(validated_predator.predator_detection_range),
-                    "predator_reaction_strength": str(
-                        validated_predator.predator_reaction_strength
-                    ),
-                },
-            },
-        )
-        self._game.update_boid_options(validated_boids)
-        self._game.update_predator_options(validated_predator)
         self.close()
 
     def _handle_reset(self) -> None:
