@@ -169,5 +169,5 @@ def react_to_predator(
     else:
         direction = (predator_pos - boid.pos).normalize()
 
-    force_magnitude = reaction_strength / (distance + 1) ** 2
+    force_magnitude = reaction_strength * (1 - distance / detection_range)
     boid.vel += direction * force_magnitude

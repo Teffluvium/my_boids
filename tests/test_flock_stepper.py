@@ -366,8 +366,8 @@ def test_speed_limit_precedes_boundary_steering(use_grid):
 
 @pytest.mark.parametrize("use_grid", [False, True])
 @pytest.mark.parametrize("mode, direction", [("avoid", 1), ("attract", -1)])
-def test_predator_reaction_at_detection_threshold(use_grid, mode, direction):
-    boid = Boid(pos=(400, 300), vel=(0, 0))
+def test_predator_reaction_falls_off_linearly_within_range(use_grid, mode, direction):
+    boid = Boid(pos=(350, 300), vel=(0, 0))
     FlockStepper(use_spatial_grid=use_grid).apply(
         [boid],
         predator_pos=pg.Vector2(300, 300),
@@ -376,7 +376,7 @@ def test_predator_reaction_at_detection_threshold(use_grid, mode, direction):
         screen_opts=ScreenOptions(),
     )
 
-    assert tuple(boid.vel) == pytest.approx((direction * 0.5 / 101**2, 0), abs=1e-9, rel=1e-9)
+    assert tuple(boid.vel) == pytest.approx((direction * 0.25, 0), abs=1e-9, rel=1e-9)
 
 
 def test_coincident_predator_reaction_consumes_same_random_draws_for_both_backends():

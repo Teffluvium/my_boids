@@ -136,3 +136,36 @@ def test_reaction_strength_scaling():
     )
 
     assert boid_strong.vel.magnitude() > boid_weak.vel.magnitude()
+
+
+@pytest.mark.parametrize(
+    ("predator_x", "expected_magnitude"),
+    [(100.5, 0.995), (150, 0.5), (175, 0.25), (200, 0.0)],
+)
+def test_force_falls_off_linearly_to_zero_at_range_edge(test_boid, predator_x, expected_magnitude):
+    react_to_predator(
+        test_boid,
+        pg.Vector2(predator_x, 100),
+        behavior_mode=BOID_AVOID_MODE_AVOID,
+        detection_range=100.0,
+        reaction_strength=1.0,
+    )
+
+    assert test_boid.vel.magnitude() == pytest.approx(expected_magnitude)
+
+
+@pytest.mark.parametrize(
+    ("mode", "expected_vel"),
+    [(BOID_AVOID_MODE_AVOID, pg.Vector2(-0.75, 0)), (BOID_AVOID_MODE_ATTRACT, pg.Vector2(0.75, 0))],
+)
+def test_force_direction_and_magnitude_by_mode(test_boid, mode, expected_vel):
+    react_to_predator(
+        test_boid,
+        pg.Vector2(150, 100),
+        behavior_mode=mode,
+        detection_range=100.0,
+        reaction_strength=1.5,
+    )
+
+    assert test_boid.vel.x == pytest.approx(expected_vel.x)
+    assert test_boid.vel.y == pytest.approx(expected_vel.y)
