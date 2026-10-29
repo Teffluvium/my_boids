@@ -130,22 +130,61 @@ def test_score_increments_on_collision(game):
     assert game.score > score_before
 
 
-def test_get_predator_target_passes_current_state_to_resolver(game, monkeypatch):
+def test_get_predator_target_delegates_to_targeter_with_current_state(game, monkeypatch):
     mode = PREDATOR_ATTACK_MODE_ISOLATED
     game.predator_opts.predator_attack_mode = mode
     mouse_pos = pg.Vector2(123, 456)
     target = pg.Vector2(11, 12)
     calls = []
 
-    def resolve(mode_arg, boids, predator_pos, mouse_pos_arg):
-        calls.append((mode_arg, boids, predator_pos, mouse_pos_arg))
+    def next_target(mode_arg, boids, predator_pos, mouse_pos_arg, detection_range):
+        calls.append((mode_arg, boids, predator_pos, mouse_pos_arg, detection_range))
         return target
 
     monkeypatch.setattr(pg.mouse, "get_pos", lambda: mouse_pos.xy)
-    monkeypatch.setattr("my_boids.game.resolve_predator_target", resolve)
+    monkeypatch.setattr(game.predator_targeter, "next_target", next_target)
 
     assert game._get_predator_target() == target
-    assert calls == [(mode, tuple(game.boid_list), game.predator.pos, mouse_pos)]
+    assert calls == [
+        (
+            mode,
+            tuple(game.boid_list),
+            game.predator.pos,
+            mouse_pos,
+            game.predator_opts.predator_detection_range,
+        )
+    ]
+
+
+def _count_targeter_resets(game, monkeypatch) -> list[None]:
+    resets: list[None] = []
+    monkeypatch.setattr(game.predator_targeter, "reset", lambda: resets.append(None))
+    return resets
+
+
+def test_reset_resets_predator_targeter(game, monkeypatch):
+    resets = _count_targeter_resets(game, monkeypatch)
+    game.reset()
+    assert len(resets) == 1
+
+
+def test_attack_mode_change_resets_predator_targeter(game, monkeypatch):
+    resets = _count_targeter_resets(game, monkeypatch)
+    new_opts = game.predator_opts.model_copy(
+        update={"predator_attack_mode": PREDATOR_ATTACK_MODE_ISOLATED}
+    )
+    game.update_predator_options(new_opts)
+    assert len(resets) == 1
+
+
+def test_range_or_strength_change_keeps_predator_targeter_state(game, monkeypatch):
+    resets = _count_targeter_resets(game, monkeypatch)
+    new_opts = game.predator_opts.model_copy(
+        update={"predator_detection_range": 150.0, "predator_reaction_strength": 1.0}
+    )
+    game.update_predator_options(new_opts)
+    assert resets == []
+    assert game.predator_opts == new_opts
 
 
 def test_process_events_returns_false_with_no_events(game):
@@ -185,6 +224,18 @@ def test_display_frame_normal(game, pygame_display):
 def test_display_frame_game_over(game, pygame_display):
     game.game_over = True
     game.display_frame(pygame_display)
+
+
+def test_display_frame_passes_predator_position_and_range(game, pygame_display, monkeypatch):
+    captured = {}
+    monkeypatch.setattr(
+        "my_boids.game.draw_frame", lambda *_args, **kwargs: captured.update(kwargs)
+    )
+
+    game.display_frame(pygame_display, flip=False)
+
+    assert captured["predator_pos"] == game.predator.pos
+    assert captured["detection_range"] == game.predator_opts.predator_detection_range
 
 
 def test_display_score(game, pygame_display):

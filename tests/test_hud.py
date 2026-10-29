@@ -1,6 +1,7 @@
 """Focused tests for HUD rendering helpers."""
 
 import pygame as pg
+import pytest
 
 from my_boids import hud
 from my_boids.flock_stepper import FlockStats
@@ -75,6 +76,9 @@ def test_draw_frame_game_over_short_circuits_sprite_and_metric_draw(monkeypatch,
     def fake_draw_metrics(*_args, **_kwargs) -> None:
         calls.append("metrics")
 
+    def fake_draw_detection_range(*_args, **_kwargs) -> None:
+        calls.append("detection_range")
+
     def fake_group_draw(self, _surface: pg.Surface) -> None:
         calls.append("sprites")
 
@@ -83,6 +87,7 @@ def test_draw_frame_game_over_short_circuits_sprite_and_metric_draw(monkeypatch,
     monkeypatch.setattr(hud, "draw_predator_mode", fake_draw_predator_mode)
     monkeypatch.setattr(hud, "draw_predator_attack_mode", fake_draw_predator_attack_mode)
     monkeypatch.setattr(hud, "draw_metrics", fake_draw_metrics)
+    monkeypatch.setattr(hud, "draw_detection_range", fake_draw_detection_range)
     monkeypatch.setattr(pg.sprite.Group, "draw", fake_group_draw)
 
     hud.draw_frame(
@@ -96,6 +101,8 @@ def test_draw_frame_game_over_short_circuits_sprite_and_metric_draw(monkeypatch,
         show_metrics=True,
         boid_count=0,
         flock_stats=FlockStats(False, 0, None),
+        predator_pos=pg.Vector2(),
+        detection_range=100.0,
     )
 
     assert calls == ["game_over"]
@@ -140,6 +147,8 @@ def test_draw_frame_active_calls_expected_helpers(monkeypatch, pygame_display):
         show_metrics=True,
         boid_count=3,
         flock_stats=FlockStats(False, 0, None),
+        predator_pos=pg.Vector2(),
+        detection_range=100.0,
     )
 
     assert "sprites" in calls
@@ -148,3 +157,47 @@ def test_draw_frame_active_calls_expected_helpers(monkeypatch, pygame_display):
     assert "predator_attack_mode" in calls
     assert "metrics" in calls
     assert "game_over" not in calls
+
+
+def test_draw_detection_range_draws_one_pixel_outline(monkeypatch, pygame_display):
+    calls: list[tuple] = []
+    monkeypatch.setattr(pg.draw, "circle", lambda *args, **kwargs: calls.append((args, kwargs)))
+
+    hud.draw_detection_range(pygame_display, pg.Vector2(40, 50), 100.0)
+
+    assert len(calls) == 1
+    args, kwargs = calls[0]
+    assert args[0] is pygame_display
+    assert args[2] == pg.Vector2(40, 50)
+    assert args[3] == 100.0
+    assert kwargs == {"width": 1}
+
+
+@pytest.mark.parametrize("show_metrics", [True, False])
+def test_draw_frame_draws_detection_range_only_with_metrics(
+    monkeypatch, pygame_display, show_metrics
+):
+    circles: list[tuple[pg.Vector2, float]] = []
+    monkeypatch.setattr(
+        hud,
+        "draw_detection_range",
+        lambda _screen, center, radius: circles.append((center, radius)),
+    )
+    monkeypatch.setattr(hud, "draw_metrics", lambda *_args, **_kwargs: None)
+
+    hud.draw_frame(
+        pygame_display,
+        pg.sprite.Group(),
+        score=0,
+        predator_mode="avoid",
+        predator_attack_mode="nearest",
+        game_over=False,
+        performance=PerformanceMonitor(enabled=True),
+        show_metrics=show_metrics,
+        boid_count=0,
+        flock_stats=FlockStats(False, 0, None),
+        predator_pos=pg.Vector2(70, 80),
+        detection_range=120.0,
+    )
+
+    assert circles == ([(pg.Vector2(70, 80), 120.0)] if show_metrics else [])

@@ -132,6 +132,7 @@ class ScreenOptions(BaseModel):
     winsize: list[int] = Field(default=[800, 600])
     fullscreen: bool = Field(default=False)
     boundary_type: BoundaryType = Field(default=BoundaryType.BOUNCE)
+    show_metrics: bool = Field(default=True)
 
     @field_validator("winsize")
     @classmethod
@@ -150,7 +151,13 @@ class ScreenOptions(BaseModel):
         winsize = json.loads(config["screen"]["winsize"])
         fullscreen = config["screen"].getboolean("fullscreen", fallback=False)
         boundary_type = BoundaryType[config["screen"]["boundary_type"].upper()]
-        return cls(winsize=winsize, fullscreen=fullscreen, boundary_type=boundary_type)
+        show_metrics = config["screen"].getboolean("show_metrics", fallback=True)
+        return cls(
+            winsize=winsize,
+            fullscreen=fullscreen,
+            boundary_type=boundary_type,
+            show_metrics=show_metrics,
+        )
 
 
 class BoidOptions(BaseModel):

@@ -244,6 +244,9 @@ Adjust the parameters in the `[screen]` section of `config.ini` to change some g
 - Select the boundary type at the edge of the screen: either WRAP or BOUNCE
   \
   `boundary_type = BOUNCE`
+- Show performance metrics and the predator detection range circle? Accepts the same values as `fullscreen`. Defaults to `yes` when omitted
+  \
+  `show_metrics = yes`
 
 Adjust the `[boid]` parameters at in the file `config.ini` to modify the boid behaviour in the simulation:
 
@@ -277,10 +280,10 @@ Adjust the `[boid]` parameters at in the file `config.ini` to modify the boid be
 - Predator attack mode. Use `mouse`, `center`, `nearest`, or `isolated` to steer the predator with the mouse cursor or target the flock center, closest boid, or most isolated boid
   \
   `predator_attack_mode = mouse`
-- Distance at which boids react to the predator
+- Distance at which the predator senses boids and boids react to the predator. In `center`, `nearest`, and `isolated` modes the predator only targets boids within this range; when it loses them it flies to where it last saw one, then wanders the screen until a boid comes back into range. `mouse` mode ignores the range
   \
   `predator_detection_range = 400.0`
-- Strength of the boids' reaction to the predator
+- Peak strength of the boids' reaction to the predator. The reaction is strongest next to the predator and fades linearly to zero at the edge of the detection range
   \
   `predator_reaction_strength = 0.5`
 
