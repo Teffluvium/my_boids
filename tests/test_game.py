@@ -226,6 +226,18 @@ def test_display_frame_game_over(game, pygame_display):
     game.display_frame(pygame_display)
 
 
+def test_display_frame_passes_predator_position_and_range(game, pygame_display, monkeypatch):
+    captured = {}
+    monkeypatch.setattr(
+        "my_boids.game.draw_frame", lambda *_args, **kwargs: captured.update(kwargs)
+    )
+
+    game.display_frame(pygame_display, flip=False)
+
+    assert captured["predator_pos"] == game.predator.pos
+    assert captured["detection_range"] == game.predator_opts.predator_detection_range
+
+
 def test_display_score(game, pygame_display):
     game.display_score(pygame_display)
 

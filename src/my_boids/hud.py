@@ -89,6 +89,11 @@ def draw_metrics(
         y_offset += 18
 
 
+def draw_detection_range(screen: pg.Surface, center: pg.Vector2, radius: float) -> None:
+    """Draw the predator detection range as a thin outline."""
+    pg.draw.circle(screen, pg.Color("gray40"), center, radius, width=1)
+
+
 def draw_frame(
     screen: pg.Surface,
     all_sprites: pg.sprite.Group,
@@ -100,6 +105,9 @@ def draw_frame(
     show_metrics: bool,
     boid_count: int,
     flock_stats: FlockStats,
+    *,
+    predator_pos: pg.Vector2,
+    detection_range: float,
 ) -> None:
     """Draw the complete simulation frame."""
     screen.fill(pg.Color("black"))
@@ -108,6 +116,8 @@ def draw_frame(
         draw_game_over(screen)
         return
 
+    if show_metrics:
+        draw_detection_range(screen, predator_pos, detection_range)
     all_sprites.draw(screen)
     draw_score(screen, score)
     draw_predator_mode(screen, predator_mode)

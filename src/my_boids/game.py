@@ -234,6 +234,8 @@ class Game:
             self.show_metrics,
             len(self.boid_list),
             self.flock_stepper.stats(),
+            predator_pos=self.predator.pos,
+            detection_range=self.predator_opts.predator_detection_range,
         )
         if flip:
             pg.display.flip()
