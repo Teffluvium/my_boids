@@ -15,6 +15,7 @@ from my_boids.options import (
     PredatorOptions,
     ScreenOptions,
 )
+from my_boids.settings_service import SettingsSaveError
 from my_boids.settings_ui import SettingsDialog
 
 
@@ -93,14 +94,22 @@ def test_settings_dialog_collects_attack_strategy(tmp_path: Path, ui_game: Game)
     dialog.close()
 
 
-def test_settings_dialog_handle_save_writes_predator_section(tmp_path: Path, ui_game: Game):
+def test_settings_dialog_stays_open_when_save_fails(
+    tmp_path: Path, ui_game: Game, monkeypatch: pytest.MonkeyPatch
+):
     dialog = _make_dialog(tmp_path, ui_game)
     dialog.open((800, 600))
+    displayed_errors: list[str] = []
+    monkeypatch.setattr(
+        "my_boids.settings_ui.save_settings",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            SettingsSaveError("apply", "runtime update failed", persisted=True)
+        ),
+    )
+    monkeypatch.setattr(dialog, "_show_error", displayed_errors.append)
+
     dialog._handle_save()
 
-    text = (tmp_path / "config.ini").read_text()
-    assert "[predator]" in text
-    assert "predator_attack_mode = center" in text
-    assert "boid_avoid_mode = avoid" in text
-    assert "num_boids = 3" in text
-    assert "None" not in text
+    assert dialog.is_open()
+    assert displayed_errors == ["Saved, but not fully applied: runtime update failed"]
+    dialog.close()
