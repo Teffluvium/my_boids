@@ -20,7 +20,7 @@ from my_boids.options import (
 )
 from my_boids.performance import PerformanceMonitor
 from my_boids.predator import Predator
-from my_boids.predator_targeting import resolve_predator_target
+from my_boids.predator_targeting import PredatorTargeter
 
 rng = np.random.default_rng()
 
@@ -50,6 +50,9 @@ class Game:
         self.all_sprites_list: pg.sprite.Group = pg.sprite.Group()
 
         self.flock_stepper = FlockStepper(use_spatial_grid=use_spatial_grid)
+        self.predator_targeter = PredatorTargeter(
+            (self.screen_opts.winsize[0], self.screen_opts.winsize[1])
+        )
 
         self.performance = PerformanceMonitor(enabled=enable_profiling)
 
@@ -93,6 +96,7 @@ class Game:
     def reset(self) -> None:
         self.score = 0
         self.game_over = False
+        self.predator_targeter.reset()
         self.boid_list.empty()
         self.all_sprites_list.empty()
         self._initialize_sprites()
@@ -141,6 +145,8 @@ class Game:
                 boid.kill()
 
     def update_predator_options(self, new_opts: PredatorOptions) -> None:
+        if new_opts.predator_attack_mode != self.predator_opts.predator_attack_mode:
+            self.predator_targeter.reset()
         self.predator_opts = new_opts
 
     def run_logic(self):
@@ -164,11 +170,12 @@ class Game:
         self.predator.update(self._get_predator_target())
 
     def _get_predator_target(self) -> pg.Vector2:
-        return resolve_predator_target(
+        return self.predator_targeter.next_target(
             self.predator_opts.predator_attack_mode,
             tuple(self.boid_list),
             self.predator.pos,
             pg.Vector2(pg.mouse.get_pos()),
+            self.predator_opts.predator_detection_range,
         )
 
     def _apply_all_boid_rules(self) -> None:
